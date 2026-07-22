@@ -1,66 +1,62 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import { User, Session } from '@supabase/supabase-js'
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  User as FirebaseUser
+} from 'firebase/auth'
+import { auth, db } from '@/lib/firebase'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
+  const [user, setUser] = useState<FirebaseUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [rol, setRol] = useState<'client' | 'admin' | null>(null)
   const router = useRouter()
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchUserRol(session.user.id)
-      }
-      setLoading(false)
-    })
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchUserRol(session.user.id)
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser)
+        await fetchUserRol(firebaseUser.uid)
       } else {
+        setUser(null)
         setRol(null)
       }
       setLoading(false)
     })
 
-    return () => subscription?.unsubscribe()
+    return () => unsubscribe()
   }, [])
 
   const fetchUserRol = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('rol')
-      .eq('id', userId)
-      .single()
-
-    if (error) {
+    try {
+      const userDoc = await getDoc(doc(db, 'users', userId))
+      if (userDoc.exists()) {
+        const userData = userDoc.data()
+        setRol(userData.rol || 'client')
+      } else {
+        setRol('client')
+      }
+    } catch (error) {
       console.error('Error fetching user rol:', error)
-      setRol('client') // Default to client
-    } else {
-      setRol(data?.rol ?? 'client')
+      setRol('client')
     }
   }
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) throw error
-    router.push('/')
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password)
+      if (result.user) {
+        await fetchUserRol(result.user.uid)
+      }
+      router.push('/')
+    } catch (error: any) {
+      throw new Error(error.message || 'Error al iniciar sesión')
+    }
   }
 
   const register = async (
@@ -68,46 +64,40 @@ export function useAuth() {
     password: string,
     nombre: string
   ) => {
-    const { error: signUpError, data } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          nombre,
-        },
-      },
-    })
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password)
 
-    if (signUpError) throw signUpError
-
-    // Create user record
-    if (data.user) {
-      const { error: insertError } = await supabase.from('users').insert([
-        {
-          id: data.user.id,
+      if (result.user) {
+        // Create user record in Firestore
+        await setDoc(doc(db, 'users', result.user.uid), {
           email,
           nombre,
           rol: 'client',
-        },
-      ])
+          direccion: '',
+          telefono: '',
+          createdAt: new Date(),
+        })
+      }
 
-      if (insertError) throw insertError
+      router.push('/auth/login')
+    } catch (error: any) {
+      throw new Error(error.message || 'Error al registrarse')
     }
-
-    router.push('/auth/login')
   }
 
   const logout = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-    setUser(null)
-    setRol(null)
-    router.push('/')
+    try {
+      await signOut(auth)
+      setUser(null)
+      setRol(null)
+      router.push('/')
+    } catch (error: any) {
+      throw new Error(error.message || 'Error al cerrar sesión')
+    }
   }
 
   return {
     user,
-    session,
     loading,
     rol,
     isAuthenticated: !!user,

@@ -1,0 +1,333 @@
+'use client'
+
+import { useEffect, useState, useMemo } from 'react'
+import { db, Producto } from '@/lib/firebase'
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import { useCart } from '@/hooks/useCart'
+import toast from 'react-hot-toast'
+import Link from 'next/link'
+import { FiSearch } from 'react-icons/fi'
+
+const emojis: { [key: string]: string } = {
+  frutas: '🍎',
+  verduras: '🥬',
+  organico: '🌱',
+  otro: '📦',
+}
+
+export default function CatalogoPage() {
+  const [productos, setProductos] = useState<(Producto & { id: string })[]>([])
+  const [loading, setLoading] = useState(true)
+  const [categoria, setCategoria] = useState<string>('todos')
+  const [busqueda, setBusqueda] = useState<string>('')
+  const [precioMin, setPrecioMin] = useState<number>(0)
+  const [precioMax, setPrecioMax] = useState<number>(50000)
+  const [soloDisponibles, setSoloDisponibles] = useState<boolean>(true)
+  const [ordenar, setOrdenar] = useState<'relevancia' | 'precio-asc' | 'precio-desc' | 'nombre' | 'rating'>('relevancia')
+  const { addItem } = useCart()
+
+  // Filtrar y ordenar productos
+  const productosFiltrados = useMemo(() => {
+    let resultado = productos.filter((p) => {
+      const coincideBusqueda =
+        p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+        p.descripcion.toLowerCase().includes(busqueda.toLowerCase())
+
+      const coincidePrecio = p.precio >= precioMin && p.precio <= precioMax
+
+      const coincideDisponibilidad = !soloDisponibles || (p.disponible && p.stock > 0)
+
+      return coincideBusqueda && coincidePrecio && coincideDisponibilidad
+    })
+
+    // Aplicar ordenamiento
+    switch (ordenar) {
+      case 'precio-asc':
+        resultado.sort((a, b) => a.precio - b.precio)
+        break
+      case 'precio-desc':
+        resultado.sort((a, b) => b.precio - a.precio)
+        break
+      case 'nombre':
+        resultado.sort((a, b) => a.nombre.localeCompare(b.nombre))
+        break
+      case 'rating':
+        resultado.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+        break
+      case 'relevancia':
+      default:
+        // Mantener orden por defecto
+        break
+    }
+
+    return resultado
+  }, [productos, busqueda, precioMin, precioMax, soloDisponibles, ordenar])
+
+  useEffect(() => {
+    fetchProductos()
+  }, [categoria])
+
+  const fetchProductos = async () => {
+    try {
+      setLoading(true)
+      let q
+
+      if (categoria === 'todos') {
+        q = query(collection(db, 'productos'))
+      } else {
+        q = query(
+          collection(db, 'productos'),
+          where('categoria', '==', categoria)
+        )
+      }
+
+      const querySnapshot = await getDocs(q)
+      const allData = querySnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as (Producto & { id: string })[]
+      const data = allData.filter((p) => p.disponible === true)
+      setProductos(data)
+    } catch (error) {
+      console.error('Error fetching productos:', error)
+      toast.error('Error al cargar productos')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAgregar = (producto: Producto & { id: string }) => {
+    addItem(producto, 1)
+    toast.success(`${producto.nombre} agregado al carrito`)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold mb-4">Catálogo de Productos</h1>
+          <p className="text-gray-600 text-lg">
+            Explora nuestros productos frescos y de calidad
+          </p>
+        </div>
+
+        {/* Búsqueda */}
+        <div className="mb-8">
+          <div className="relative">
+            <FiSearch className="absolute left-4 top-3 text-gray-400 text-xl" />
+            <input
+              type="text"
+              placeholder="Buscar productos..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+            />
+          </div>
+        </div>
+
+        {/* Ordenamiento */}
+        <div className="mb-6 flex justify-between items-center">
+          <h2 className="text-lg font-bold text-gray-900">Ordenar por:</h2>
+          <select
+            value={ordenar}
+            onChange={(e) => setOrdenar(e.target.value as any)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+          >
+            <option value="relevancia">Relevancia</option>
+            <option value="precio-asc">Precio: Menor a Mayor</option>
+            <option value="precio-desc">Precio: Mayor a Menor</option>
+            <option value="nombre">Nombre: A-Z</option>
+            <option value="rating">Mejor Calificados</option>
+          </select>
+        </div>
+
+        {/* Filtros */}
+        <div className="mb-8 bg-white rounded-lg shadow p-6">
+          <div className="grid md:grid-cols-4 gap-6">
+            {/* Categoría */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3">Categoría</h3>
+              <div className="space-y-2">
+                {['todos', 'frutas', 'verduras', 'organico'].map((cat) => (
+                  <label key={cat} className="flex items-center">
+                    <input
+                      type="radio"
+                      name="categoria"
+                      value={cat}
+                      checked={categoria === cat}
+                      onChange={(e) => setCategoria(e.target.value)}
+                      className="w-4 h-4 text-green-600"
+                    />
+                    <span className="ml-2 text-gray-700 capitalize">
+                      {cat === 'todos' ? 'Todos' : cat === 'frutas' ? '🍎 Frutas' : cat === 'verduras' ? '🥬 Verduras' : '🌱 Orgánico'}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Precio */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3">Rango de Precio</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm text-gray-600">Mínimo</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={precioMin}
+                    onChange={(e) => setPrecioMin(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-600">Máximo</label>
+                  <input
+                    type="number"
+                    value={precioMax}
+                    onChange={(e) => setPrecioMax(Number(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                  />
+                </div>
+                <p className="text-sm text-gray-700 font-medium">
+                  ${precioMin.toLocaleString()} - ${precioMax.toLocaleString()}
+                </p>
+              </div>
+            </div>
+
+            {/* Disponibilidad */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3">Disponibilidad</h3>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={soloDisponibles}
+                  onChange={(e) => setSoloDisponibles(e.target.checked)}
+                  className="w-4 h-4 text-green-600 rounded"
+                />
+                <span className="ml-2 text-gray-700">Solo disponibles</span>
+              </label>
+            </div>
+
+            {/* Resumen */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3">Resultados</h3>
+              <p className="text-3xl font-bold text-green-600">{productosFiltrados.length}</p>
+              <p className="text-sm text-gray-600">productos encontrados</p>
+              {(busqueda || precioMin > 0 || precioMax < 50000 || !soloDisponibles || categoria !== 'todos') && (
+                <button
+                  onClick={() => {
+                    setBusqueda('')
+                    setCategoria('todos')
+                    setPrecioMin(0)
+                    setPrecioMax(50000)
+                    setSoloDisponibles(true)
+                  }}
+                  className="text-green-600 hover:text-green-700 text-sm font-medium mt-2"
+                >
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Productos */}
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <p className="text-gray-600">Cargando productos...</p>
+          </div>
+        ) : productosFiltrados.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-lg">
+            <p className="text-gray-600 text-lg mb-4">
+              {productos.length === 0
+                ? 'No hay productos disponibles'
+                : 'No hay productos que coincidan con tus filtros'}
+            </p>
+            <button
+              onClick={() => {
+                setBusqueda('')
+                setCategoria('todos')
+                setPrecioMin(0)
+                setPrecioMax(50000)
+                setSoloDisponibles(true)
+              }}
+              className="inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700"
+            >
+              Limpiar filtros
+            </button>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {productosFiltrados.map((producto) => (
+              <div
+                key={producto.id}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition flex flex-col h-full"
+              >
+                <Link href={`/producto/${producto.id}`} className="flex-1 flex flex-col">
+                  {producto.imagenUrl ? (
+                    <img
+                      src={producto.imagenUrl}
+                      alt={producto.nombre}
+                      className="w-full h-48 object-cover"
+                    />
+                  ) : (
+                    <div className="bg-gradient-to-br from-green-100 to-green-200 h-48 flex items-center justify-center text-6xl">
+                      {emojis[producto.categoria] || '📦'}
+                    </div>
+                  )}
+                  <div className="p-4 flex-1 flex flex-col">
+                    <h3 className="font-bold text-lg mb-1">{producto.nombre}</h3>
+                    <p className="text-gray-600 text-sm mb-2">{producto.descripcion}</p>
+                    <p className="text-gray-500 text-xs mb-3">Peso: {producto.peso}</p>
+
+                    <div className="mt-auto">
+                      {producto.stock > 0 ? (
+                        <div className="flex justify-between items-center">
+                          <span className="text-green-600 font-bold text-lg">
+                            ${producto.precio.toLocaleString('es-CL')}
+                          </span>
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            Stock: {producto.stock}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="text-center py-2 bg-gray-100 rounded text-gray-600 font-medium">
+                          Agotado
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+
+                {producto.stock > 0 && (
+                  <div className="p-4 pt-0">
+                    <button
+                      onClick={() => handleAgregar(producto)}
+                      className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition font-medium"
+                    >
+                      Agregar
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Back to home */}
+        <div className="mt-12 text-center">
+          <Link
+            href="/"
+            className="inline-block text-green-600 hover:text-green-700 font-medium"
+          >
+            ← Volver a inicio
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}

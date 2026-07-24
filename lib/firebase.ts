@@ -93,3 +93,18 @@ export interface FAQ {
   activo: boolean
   createdAt: Date
 }
+
+export interface AnalisisHistorico {
+  id: string
+  productoId: string
+  nombre: string
+  unidadVenta: 'unidad' | 'kilo'
+  precioAnterior: number
+  precioSugerido: number
+  costo: number
+  competencia: Competencia[]
+  promedioCompetencia: number
+  margenGlobal: number
+  timestamp: Date
+  createdAt: Date
+}

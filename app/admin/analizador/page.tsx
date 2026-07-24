@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { db } from '@/lib/firebase'
-import { collection, getDocs, updateDoc, doc } from 'firebase/firestore'
+import { collection, getDocs, updateDoc, doc, addDoc, serverTimestamp } from 'firebase/firestore'
 import Link from 'next/link'
 import { FiSave } from 'react-icons/fi'
 import toast from 'react-hot-toast'
@@ -15,6 +15,7 @@ interface Producto {
   costo?: number
   competencia?: Array<{ empresa: string; precio: number }>
   categoria: string
+  unidadVenta?: 'unidad' | 'kilo'
 }
 
 export default function AnalizadorPage() {
@@ -107,10 +108,58 @@ export default function AnalizadorPage() {
   }
 
   const guardarProducto = async (producto: Producto) => {
-    await updateProducto(producto.id, {
-      costo: producto.costo || 0,
-      competencia: producto.competencia || [],
-    })
+    try {
+      setSaving(true)
+      const promedioCompetencia = calcularPromedioCompetencia(producto)
+      const precioSugerido = calcularPrecioSugerido(producto)
+
+      // Guardar en histórico
+      await addDoc(collection(db, 'analisisHistorico'), {
+        productoId: producto.id,
+        nombre: producto.nombre,
+        unidadVenta: producto.unidadVenta || 'kilo',
+        precioAnterior: producto.precio,
+        precioSugerido: precioSugerido,
+        costo: producto.costo || 0,
+        competencia: producto.competencia || [],
+        promedioCompetencia: promedioCompetencia,
+        margenGlobal: margenGlobal,
+        timestamp: new Date(),
+        createdAt: serverTimestamp(),
+      })
+
+      // Actualizar producto con precio sugerido y datos de análisis
+      await updateDoc(doc(db, 'productos', producto.id), {
+        precio: precioSugerido,
+        costo: producto.costo || 0,
+        competencia: producto.competencia || [],
+        updatedAt: serverTimestamp(),
+      })
+
+      // Actualizar estado local y reiniciar campos
+      setProductos((prev) =>
+        prev.map((p) =>
+          p.id === producto.id
+            ? {
+                ...p,
+                precio: precioSugerido,
+                costo: 0,
+                competencia: [
+                  { empresa: '', precio: 0 },
+                  { empresa: '', precio: 0 },
+                ],
+              }
+            : p
+        )
+      )
+
+      toast.success('Análisis guardado y precio actualizado')
+    } catch (error) {
+      console.error('Error guardando análisis:', error)
+      toast.error('Error al guardar análisis')
+    } finally {
+      setSaving(false)
+    }
   }
 
   if (!isAuthenticated || !isAdmin) {
@@ -200,6 +249,7 @@ export default function AnalizadorPage() {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Producto</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Unidad</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Precio Actual</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Costo</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Competencia 1</th>
@@ -221,6 +271,12 @@ export default function AnalizadorPage() {
                       <tr key={producto.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
                           <p className="font-semibold text-gray-900">{producto.nombre}</p>
+                        </td>
+
+                        <td className="px-6 py-4 text-gray-900 text-sm">
+                          <span className="bg-gray-200 px-2 py-1 rounded">
+                            {producto.unidadVenta === 'unidad' ? 'Unidad' : 'Kilo'}
+                          </span>
                         </td>
 
                         <td className="px-6 py-4 text-gray-900">

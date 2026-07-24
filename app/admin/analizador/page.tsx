@@ -23,6 +23,7 @@ export default function AnalizadorPage() {
   const [loading, setLoading] = useState(true)
   const [margenGlobal, setMargenGlobal] = useState<number>(30)
   const [saving, setSaving] = useState(false)
+  const [busqueda, setBusqueda] = useState<string>('')
 
   useEffect(() => {
     if (isAdmin) {
@@ -33,10 +34,12 @@ export default function AnalizadorPage() {
   const loadProductos = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'productos'))
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Producto[]
+      const data = snapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre)) as Producto[]
       setProductos(data)
     } catch (error) {
       console.error('Error loading productos:', error)
@@ -125,7 +128,7 @@ export default function AnalizadorPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-full px-4">
         <div className="flex items-center gap-4 mb-8">
           <Link href="/admin/productos" className="text-green-600 hover:text-green-700">
             <FiArrowLeft size={24} />
@@ -133,27 +136,38 @@ export default function AnalizadorPage() {
           <h1 className="text-4xl font-bold">Analizador de Venta</h1>
         </div>
 
-        {/* Margen Global */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-lg font-bold mb-4">Configuración General</h2>
-          <div className="grid md:grid-cols-3 gap-4">
+        {/* Filtros y Margen */}
+        <div className="bg-white rounded-lg shadow p-4 mb-8">
+          <div className="grid md:grid-cols-3 gap-4 items-end">
+            {/* Buscador */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Margen General (%)
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Buscar Producto</label>
+              <input
+                type="text"
+                placeholder="Ej: Manzana, Tomate..."
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 text-sm"
+              />
+            </div>
+
+            {/* Margen Global */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Margen General (%)</label>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   value={margenGlobal}
                   onChange={(e) => setMargenGlobal(parseFloat(e.target.value) || 0)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 text-sm"
                 />
-                <span className="text-sm font-bold text-green-600">%</span>
+                <span className="text-lg font-bold text-green-600 min-w-12">{margenGlobal}%</span>
               </div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <p className="text-sm text-gray-600">Margen aplicado</p>
-              <p className="text-2xl font-bold text-green-600">{margenGlobal}%</p>
+
+            {/* Resultados */}
+            <div className="text-right">
+              <p className="text-sm text-gray-600">Total: <span className="font-bold text-green-600">{productos.filter(p => p.nombre.toLowerCase().includes(busqueda.toLowerCase())).length} productos</span></p>
             </div>
           </div>
         </div>
@@ -164,132 +178,160 @@ export default function AnalizadorPage() {
             <p className="text-gray-600">Cargando productos...</p>
           </div>
         ) : (
-          <div className="grid gap-6">
-            {productos.map((producto) => {
-              const promedioCompetencia = calcularPromedioCompetencia(producto)
-              const precioSugerido = calcularPrecioSugerido(producto)
-              const esCompetitivo = precioSugerido <= promedioCompetencia && promedioCompetencia > 0
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-green-600 text-white">
+                <tr>
+                  <th className="px-4 py-3 text-left font-bold">Producto</th>
+                  <th className="px-4 py-3 text-center font-bold">Precio Actual</th>
+                  <th className="px-4 py-3 text-center font-bold">Costo</th>
+                  <th className="px-4 py-3 text-center font-bold">Comp. 1</th>
+                  <th className="px-4 py-3 text-center font-bold">Comp. 2</th>
+                  <th className="px-4 py-3 text-center font-bold">Promedio Comp.</th>
+                  <th className="px-4 py-3 text-center font-bold">Precio Sugerido</th>
+                  <th className="px-4 py-3 text-center font-bold">Estado</th>
+                  <th className="px-4 py-3 text-center font-bold">Guardar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productos
+                  .filter((p) => p.nombre.toLowerCase().includes(busqueda.toLowerCase()))
+                  .map((producto, idx) => {
+                  const promedioCompetencia = calcularPromedioCompetencia(producto)
+                  const precioSugerido = calcularPrecioSugerido(producto)
+                  const esCompetitivo =
+                    precioSugerido <= promedioCompetencia && promedioCompetencia > 0
 
-              return (
-                <div
-                  key={producto.id}
-                  className="bg-white rounded-lg shadow p-6 border-l-4 border-green-600"
-                >
-                  <div className="grid md:grid-cols-2 gap-6 mb-6">
-                    {/* Info Producto */}
-                    <div>
-                      <h3 className="text-xl font-bold mb-2">{producto.nombre}</h3>
-                      <p className="text-sm text-gray-600 mb-4">{producto.categoria}</p>
+                  return (
+                    <tr
+                      key={producto.id}
+                      className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                    >
+                      {/* Producto */}
+                      <td className="px-4 py-3 font-bold">{producto.nombre}</td>
 
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">
-                            Precio Actual:
-                          </label>
-                          <p className="text-2xl font-bold text-green-600">
-                            ${producto.precio.toLocaleString('es-CL')}
-                          </p>
-                        </div>
+                      {/* Precio Actual */}
+                      <td className="px-4 py-3 text-center">
+                        <span className="font-bold text-green-600">
+                          ${producto.precio.toLocaleString('es-CL')}
+                        </span>
+                      </td>
 
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Costo del Producto:
-                          </label>
-                          <input
-                            type="number"
-                            value={producto.costo || ''}
-                            onChange={(e) =>
-                              handleCostoChange(producto.id, parseFloat(e.target.value) || 0)
-                            }
-                            placeholder="Ingresa el costo"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                          />
-                        </div>
-                      </div>
-                    </div>
+                      {/* Costo */}
+                      <td className="px-4 py-3">
+                        <input
+                          type="number"
+                          value={producto.costo || ''}
+                          onChange={(e) =>
+                            handleCostoChange(producto.id, parseFloat(e.target.value) || 0)
+                          }
+                          placeholder="0"
+                          className="w-full px-2 py-1 border border-gray-300 rounded text-sm text-center focus:outline-none focus:ring-2 focus:ring-green-600"
+                        />
+                      </td>
 
-                    {/* Análisis */}
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h4 className="font-bold mb-4">Análisis de Precio</h4>
-
-                      {promedioCompetencia > 0 && (
-                        <div className="mb-4 pb-4 border-b">
-                          <p className="text-sm text-gray-600">Promedio Competencia:</p>
-                          <p className="text-2xl font-bold text-blue-600">
-                            ${Math.round(promedioCompetencia).toLocaleString('es-CL')}
-                          </p>
-                        </div>
-                      )}
-
-                      {producto.costo && (
-                        <div>
-                          <p className="text-sm text-gray-600">Precio Sugerido ({margenGlobal}%):</p>
-                          <p className="text-2xl font-bold text-green-600 mb-2">
-                            ${precioSugerido.toLocaleString('es-CL')}
-                          </p>
-
-                          {promedioCompetencia > 0 && (
-                            <div
-                              className={`text-sm font-bold px-3 py-1 rounded inline-block ${
-                                esCompetitivo
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {esCompetitivo
-                                ? `✓ Competitivo (${(precioSugerido - promedioCompetencia).toLocaleString('es-CL')} más bajo)`
-                                : `✗ Más caro (${(precioSugerido - promedioCompetencia).toLocaleString('es-CL')} más alto)`}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Competencia */}
-                  <div className="border-t pt-6">
-                    <h4 className="font-bold mb-4">Precios de Competencia</h4>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {[0, 1].map((idx) => (
-                        <div key={idx} className="border rounded-lg p-4">
-                          <p className="text-sm font-medium text-gray-600 mb-3">
-                            Competencia {idx + 1}
-                          </p>
+                      {/* Competencia 1 */}
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
                           <input
                             type="text"
                             placeholder="Empresa"
-                            value={producto.competencia?.[idx]?.empresa || ''}
+                            value={producto.competencia?.[0]?.empresa || ''}
                             onChange={(e) =>
-                              handleCompetenciaChange(producto.id, idx, 'empresa', e.target.value)
+                              handleCompetenciaChange(producto.id, 0, 'empresa', e.target.value)
                             }
-                            className="w-full px-3 py-2 border border-gray-300 rounded mb-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-green-600"
                           />
                           <input
                             type="number"
                             placeholder="Precio"
-                            value={producto.competencia?.[idx]?.precio || ''}
+                            value={producto.competencia?.[0]?.precio || ''}
                             onChange={(e) =>
-                              handleCompetenciaChange(producto.id, idx, 'precio', e.target.value)
+                              handleCompetenciaChange(producto.id, 0, 'precio', e.target.value)
                             }
-                            className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-2 focus:ring-green-600"
                           />
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </td>
 
-                  {/* Botón Guardar */}
-                  <button
-                    onClick={() => guardarProducto(producto)}
-                    disabled={saving}
-                    className="mt-6 flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400 font-medium"
-                  >
-                    <FiSave size={18} />
-                    {saving ? 'Guardando...' : 'Guardar Análisis'}
-                  </button>
-                </div>
-              )
-            })}
+                      {/* Competencia 2 */}
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          <input
+                            type="text"
+                            placeholder="Empresa"
+                            value={producto.competencia?.[1]?.empresa || ''}
+                            onChange={(e) =>
+                              handleCompetenciaChange(producto.id, 1, 'empresa', e.target.value)
+                            }
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-green-600"
+                          />
+                          <input
+                            type="number"
+                            placeholder="Precio"
+                            value={producto.competencia?.[1]?.precio || ''}
+                            onChange={(e) =>
+                              handleCompetenciaChange(producto.id, 1, 'precio', e.target.value)
+                            }
+                            className="w-full px-2 py-1 border border-gray-300 rounded text-xs text-center focus:outline-none focus:ring-2 focus:ring-green-600"
+                          />
+                        </div>
+                      </td>
+
+                      {/* Promedio */}
+                      <td className="px-4 py-3 text-center">
+                        {promedioCompetencia > 0 ? (
+                          <span className="font-bold text-blue-600">
+                            ${Math.round(promedioCompetencia).toLocaleString('es-CL')}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+
+                      {/* Precio Sugerido */}
+                      <td className="px-4 py-3 text-center">
+                        {producto.costo ? (
+                          <span className="font-bold text-green-600">
+                            ${precioSugerido.toLocaleString('es-CL')}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+
+                      {/* Estado */}
+                      <td className="px-4 py-3 text-center">
+                        {promedioCompetencia > 0 && producto.costo ? (
+                          <span
+                            className={`text-xs font-bold px-2 py-1 rounded ${
+                              esCompetitivo
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {esCompetitivo ? '✓ Competitivo' : '✗ Caro'}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-xs">-</span>
+                        )}
+                      </td>
+
+                      {/* Guardar */}
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => guardarProducto(producto)}
+                          disabled={saving}
+                          className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 disabled:bg-gray-400 font-medium"
+                        >
+                          <FiSave size={16} />
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

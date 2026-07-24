@@ -245,19 +245,18 @@ export default function AnalizadorPage() {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Producto</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Unidad</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Precio Actual</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Costo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Competencia 1</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Competencia 2</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Promedio</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Sugerido</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Estado</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Guardar</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Producto</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Unidad</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Costo</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Comp 1</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Comp 2</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Promedio</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Sugerido</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Estado</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Guardar</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -269,21 +268,17 @@ export default function AnalizadorPage() {
 
                     return (
                       <tr key={producto.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <p className="font-semibold text-gray-900">{producto.nombre}</p>
+                        <td className="px-3 py-2">
+                          <p className="font-medium text-gray-900 text-sm">{producto.nombre}</p>
                         </td>
 
-                        <td className="px-6 py-4 text-gray-900 text-sm">
-                          <span className="bg-gray-200 px-2 py-1 rounded">
-                            {producto.unidadVenta === 'unidad' ? 'Unidad' : 'Kilo'}
+                        <td className="px-3 py-2 text-gray-900 text-xs">
+                          <span className="bg-gray-200 px-2 py-0.5 rounded text-xs">
+                            {producto.unidadVenta === 'unidad' ? 'U' : 'K'}
                           </span>
                         </td>
 
-                        <td className="px-6 py-4 text-gray-900">
-                          ${producto.precio.toLocaleString('es-CL')}
-                        </td>
-
-                        <td className="px-6 py-4">
+                        <td className="px-3 py-2">
                           <input
                             type="number"
                             value={producto.costo || ''}
@@ -291,57 +286,57 @@ export default function AnalizadorPage() {
                               handleCostoChange(producto.id, parseFloat(e.target.value) || 0)
                             }
                             placeholder="0"
-                            className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                            className="w-16 px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-green-600"
                           />
                         </td>
 
-                        <td className="px-6 py-4">
-                          <div className="space-y-1 w-32">
+                        <td className="px-3 py-2">
+                          <div className="space-y-0.5 w-24">
                             <input
                               type="text"
-                              placeholder="Empresa"
+                              placeholder="Emp"
                               value={producto.competencia?.[0]?.empresa || ''}
                               onChange={(e) =>
                                 handleCompetenciaChange(producto.id, 0, 'empresa', e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-green-600"
                             />
                             <input
                               type="number"
-                              placeholder="Precio"
+                              placeholder="$"
                               value={producto.competencia?.[0]?.precio || ''}
                               onChange={(e) =>
                                 handleCompetenciaChange(producto.id, 0, 'precio', e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-green-600"
                             />
                           </div>
                         </td>
 
-                        <td className="px-6 py-4">
-                          <div className="space-y-1 w-32">
+                        <td className="px-3 py-2">
+                          <div className="space-y-0.5 w-24">
                             <input
                               type="text"
-                              placeholder="Empresa"
+                              placeholder="Emp"
                               value={producto.competencia?.[1]?.empresa || ''}
                               onChange={(e) =>
                                 handleCompetenciaChange(producto.id, 1, 'empresa', e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-green-600"
                             />
                             <input
                               type="number"
-                              placeholder="Precio"
+                              placeholder="$"
                               value={producto.competencia?.[1]?.precio || ''}
                               onChange={(e) =>
                                 handleCompetenciaChange(producto.id, 1, 'precio', e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                              className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-green-600"
                             />
                           </div>
                         </td>
 
-                        <td className="px-6 py-4 text-gray-900">
+                        <td className="px-3 py-2 text-gray-900 text-sm">
                           {promedioCompetencia > 0 ? (
                             <span className="font-semibold text-blue-600">
                               ${Math.round(promedioCompetencia).toLocaleString('es-CL')}
@@ -351,7 +346,7 @@ export default function AnalizadorPage() {
                           )}
                         </td>
 
-                        <td className="px-6 py-4 text-gray-900">
+                        <td className="px-3 py-2 text-gray-900 text-sm">
                           {producto.costo ? (
                             <span className="font-semibold text-green-600">
                               ${precioSugerido.toLocaleString('es-CL')}
@@ -361,29 +356,29 @@ export default function AnalizadorPage() {
                           )}
                         </td>
 
-                        <td className="px-6 py-4">
+                        <td className="px-3 py-2">
                           {promedioCompetencia > 0 && producto.costo ? (
                             <span
-                              className={`px-3 py-1 rounded text-sm font-medium ${
+                              className={`px-2 py-0.5 rounded text-xs font-medium ${
                                 esCompetitivo
                                   ? 'bg-green-100 text-green-800'
                                   : 'bg-red-100 text-red-800'
                               }`}
                             >
-                              {esCompetitivo ? '✓ Competitivo' : '✗ Caro'}
+                              {esCompetitivo ? '✓ OK' : '✗'}
                             </span>
                           ) : (
                             <span className="text-gray-400">-</span>
                           )}
                         </td>
 
-                        <td className="px-6 py-4">
+                        <td className="px-3 py-2">
                           <button
                             onClick={() => guardarProducto(producto)}
                             disabled={saving}
-                            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded inline-flex items-center gap-2"
+                            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-1 px-2 rounded text-xs inline-flex items-center gap-1"
                           >
-                            <FiSave size={16} />
+                            <FiSave size={14} />
                             Guardar
                           </button>
                         </td>

@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { db } from '@/lib/firebase'
-import { doc, getDoc, updateDoc } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface PerfilData {
   nombre: string
@@ -17,11 +18,17 @@ interface PerfilData {
   comuna: string
 }
 
+interface DatosCompra {
+  fecha: string
+  total: number
+}
+
 export default function PerfilPage() {
   const router = useRouter()
   const { user, isAuthenticated, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [datosCompras, setDatosCompras] = useState<DatosCompra[]>([])
   const [perfil, setPerfil] = useState<PerfilData>({
     nombre: '',
     telefono: '',
@@ -37,6 +44,7 @@ export default function PerfilPage() {
         router.push('/auth/login')
       } else if (user) {
         fetchPerfil()
+        fetchOrdenes()
       }
     }
   }, [isAuthenticated, user, authLoading, router])
@@ -60,6 +68,30 @@ export default function PerfilPage() {
       toast.error('Error al cargar perfil')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchOrdenes = async () => {
+    try {
+      const q = query(collection(db, 'ordenes'), where('userId', '==', user?.uid))
+      const snapshot = await getDocs(q)
+      const ordenes = snapshot.docs.map((doc) => ({
+        fecha: new Date(doc.data().createdAt?.toDate?.() || doc.data().createdAt).toLocaleDateString('es-CL'),
+        total: doc.data().total,
+      }))
+      // Agrupar por fecha y sumar totales
+      const comprasAgrupadas: { [key: string]: number } = {}
+      ordenes.forEach((orden) => {
+        comprasAgrupadas[orden.fecha] = (comprasAgrupadas[orden.fecha] || 0) + orden.total
+      })
+
+      const datos = Object.entries(comprasAgrupadas)
+        .map(([fecha, total]) => ({ fecha, total: Math.round(total) }))
+        .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime())
+
+      setDatosCompras(datos)
+    } catch (error) {
+      console.error('Error fetching ordenes:', error)
     }
   }
 
@@ -126,6 +158,28 @@ export default function PerfilPage() {
               </div>
             </div>
           </div>
+
+          {/* Gráfico de Historial de Compras */}
+          {datosCompras.length > 0 && (
+            <div className="mb-8 pb-8 border-b border-gray-200">
+              <h2 className="text-lg font-bold mb-4">Historial de Compras</h2>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={datosCompras}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="fecha" angle={-45} textAnchor="end" height={80} />
+                  <YAxis />
+                  <Tooltip formatter={(value) => `$${Number(value).toLocaleString('es-CL')}`} />
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    dot={{ fill: '#10b981', r: 5 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
 
           {/* Formulario de Despacho */}
           <form onSubmit={handleSubmit} className="space-y-6">

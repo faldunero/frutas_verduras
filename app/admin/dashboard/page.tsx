@@ -465,16 +465,16 @@ export default function DashboardPage() {
         </div>
 
         {/* Productos más vendidos */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Productos Más Vendidos</h2>
+        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          <h2 className="text-base font-bold text-gray-900 mb-3">Productos Más Vendidos</h2>
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Cargando...</div>
+            <div className="text-center py-6 text-gray-500 text-sm">Cargando...</div>
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={calcularProductosMasVendidos()}>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={calcularProductosMasVendidos()} margin={{ top: 5, right: 10, left: 0, bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="nombre" angle={-45} textAnchor="end" height={80} />
-                <YAxis />
+                <XAxis dataKey="nombre" angle={-45} textAnchor="end" height={60} tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Bar dataKey="cantidad" fill="#10b981" name="Cantidad" />
               </BarChart>
@@ -483,34 +483,34 @@ export default function DashboardPage() {
         </div>
 
         {/* Variación de precios */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Variación de Precios por Producto</h2>
+        <div className="bg-white rounded-lg shadow p-4">
+          <h2 className="text-base font-bold text-gray-900 mb-3">Variación de Precios por Producto</h2>
           {loading ? (
-            <div className="text-center py-8 text-gray-500">Cargando...</div>
+            <div className="text-center py-6 text-gray-500 text-sm">Cargando...</div>
           ) : calcularVariacionPrecios().length === 0 ? (
-            <div className="text-center py-8 text-gray-500">No hay datos de variación disponibles</div>
+            <div className="text-center py-6 text-gray-500 text-sm">No hay datos de variación disponibles</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
+              <table className="min-w-full text-xs">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Producto</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Mínimo</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Máximo</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Variación $</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Variación %</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Producto</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Mínimo</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Máximo</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Variación $</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">Variación %</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {calcularVariacionPrecios().map((producto, idx) => (
                     <tr key={idx} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 text-gray-900 font-medium">{producto.nombre}</td>
-                      <td className="px-4 py-2 text-gray-600">${producto.minimo.toLocaleString('es-CL')}</td>
-                      <td className="px-4 py-2 text-gray-600">${producto.maximo.toLocaleString('es-CL')}</td>
-                      <td className="px-4 py-2 font-bold text-blue-600">
+                      <td className="px-3 py-1 text-gray-900 font-medium">{producto.nombre}</td>
+                      <td className="px-3 py-1 text-gray-600">${producto.minimo.toLocaleString('es-CL')}</td>
+                      <td className="px-3 py-1 text-gray-600">${producto.maximo.toLocaleString('es-CL')}</td>
+                      <td className="px-3 py-1 font-bold text-blue-600">
                         ${producto.variacion.toLocaleString('es-CL')}
                       </td>
-                      <td className="px-4 py-2 font-bold text-orange-600">{producto.porcentaje}%</td>
+                      <td className="px-3 py-1 font-bold text-orange-600">{producto.porcentaje}%</td>
                     </tr>
                   ))}
                 </tbody>

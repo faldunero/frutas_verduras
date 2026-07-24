@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [mostrarContrasena, setMostrarContrasena] = useState(false)
   const [recordarCuenta, setRecordarCuenta] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const { login } = useAuth()
   const router = useRouter()
 
@@ -27,8 +28,15 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setErrorMessage('')
 
     try {
+      if (!email || !password) {
+        setErrorMessage('Por favor completa todos los campos')
+        setLoading(false)
+        return
+      }
+
       if (recordarCuenta) {
         localStorage.setItem('frutasVerduras_emailRecordado', email)
       } else {
@@ -36,10 +44,29 @@ export default function LoginPage() {
       }
 
       await login(email, password)
-      toast.success('Bienvenido!')
+      toast.success('¡Bienvenido!')
       router.push('/')
     } catch (error: any) {
-      toast.error(error.message || 'Error al iniciar sesión')
+      // Mensajes de error específicos
+      const errorCode = error.code || ''
+      let mensaje = 'Error al iniciar sesión'
+
+      if (errorCode === 'auth/user-not-found') {
+        mensaje = 'El email no está registrado. ¿Quieres registrarte?'
+      } else if (errorCode === 'auth/wrong-password') {
+        mensaje = 'Contraseña incorrecta'
+      } else if (errorCode === 'auth/invalid-email') {
+        mensaje = 'Email inválido'
+      } else if (errorCode === 'auth/user-disabled') {
+        mensaje = 'Esta cuenta ha sido desactivada'
+      } else if (error.message?.includes('user-not-found')) {
+        mensaje = 'El email no está registrado'
+      } else if (error.message?.includes('wrong-password')) {
+        mensaje = 'Contraseña incorrecta'
+      }
+
+      setErrorMessage(mensaje)
+      toast.error(mensaje)
     } finally {
       setLoading(false)
     }
@@ -60,6 +87,13 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-gray-900">Frutas & Verduras</h1>
           <p className="text-gray-600 mt-2">Inicia sesión en tu cuenta</p>
         </div>
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-700">{errorMessage}</p>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">

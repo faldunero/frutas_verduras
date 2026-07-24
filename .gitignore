@@ -49,3 +49,5 @@ Thumbs.db
 .cache/
 .vercel
 dist/
+firebase-key.json
+fireba-key.json

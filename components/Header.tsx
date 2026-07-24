@@ -45,6 +45,9 @@ export function Header() {
                 <Link href="/admin/analizador" className="hover:text-green-100 transition">
                   Analizador
                 </Link>
+                <Link href="/admin/solicitudes-arcop" className="hover:text-green-100 transition">
+                  ARCOP
+                </Link>
               </>
             ) : (
               <>
@@ -141,6 +144,9 @@ export function Header() {
               </Link>
               <Link href="/admin/analizador" className="text-sm hover:text-green-100">
                 Analizador
+              </Link>
+              <Link href="/admin/solicitudes-arcop" className="text-sm hover:text-green-100">
+                ARCOP
               </Link>
             </>
           ) : (

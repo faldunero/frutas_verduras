@@ -337,7 +337,6 @@ export default function AnalizadorPage() {
                 </tbody>
               </table>
             </div>
-          </div>
         )}
       </div>
     </div>

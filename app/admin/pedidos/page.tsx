@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { db } from '@/lib/firebase'
-import { collection, getDocs, orderBy, query } from 'firebase/firestore'
+import { collection, getDocs, query } from 'firebase/firestore'
 import { FiFilter, FiRefreshCw } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -60,12 +60,18 @@ export default function PedidosPage() {
   const loadOrdenes = async () => {
     try {
       setLoading(true)
-      const q = query(collection(db, 'ordenes'), orderBy('createdAt', 'desc'))
+      const q = query(collection(db, 'ordenes'))
       const snapshot = await getDocs(q)
       const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Orden[]
+      // Ordenar por fecha descendente en el cliente
+      data.sort((a, b) => {
+        const dateA = new Date(a.createdAt?.toDate?.() || a.createdAt).getTime()
+        const dateB = new Date(b.createdAt?.toDate?.() || b.createdAt).getTime()
+        return dateB - dateA
+      })
       setOrdenes(data)
     } catch (error) {
       console.error('Error loading ordenes:', error)

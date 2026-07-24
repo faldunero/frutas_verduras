@@ -49,6 +49,8 @@ export interface Producto {
   peso: string
   disponible: boolean
   destacado: boolean
+  conIVA?: boolean
+  unidadVenta?: 'unidad' | 'kilo'
   createdAt: Date
   updatedAt: Date
 }

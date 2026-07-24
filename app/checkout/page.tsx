@@ -1,29 +1,65 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/hooks/useCart'
 import { useAuth } from '@/hooks/useAuth'
 import { db } from '@/lib/firebase'
-import { collection, addDoc, serverTimestamp, doc, updateDoc, increment } from 'firebase/firestore'
+import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc, increment } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
 export default function CheckoutPage() {
   const router = useRouter()
-  const { items, getSubtotal, getTotal, clearCart } = useCart()
+  const { items, getSubtotal, clearCart } = useCart()
   const { user, isAuthenticated } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [loadingDatos, setLoadingDatos] = useState(true)
 
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
     telefono: '',
-    direccion: '',
-    ciudad: '',
+    calle: '',
+    numero: '',
+    anexo: '',
+    comuna: '',
     metodoPago: 'transfer',
     comentarios: '',
   })
+
+  // Cargar datos del perfil del usuario
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user?.uid) return
+      try {
+        const docSnap = await getDoc(doc(db, 'users', user.uid))
+        if (docSnap.exists()) {
+          const data = docSnap.data()
+          setFormData((prev) => ({
+            ...prev,
+            nombre: data.nombre || '',
+            email: user.email || '',
+            telefono: data.telefono || '',
+            calle: data.calle || '',
+            numero: data.numero || '',
+            anexo: data.anexo || '',
+            comuna: data.comuna || '',
+          }))
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            email: user.email || '',
+          }))
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error)
+      } finally {
+        setLoadingDatos(false)
+      }
+    }
+    loadUserData()
+  }, [user])
 
   // Redirigir si no está autenticado
   if (!isAuthenticated) {
@@ -72,9 +108,17 @@ export default function CheckoutPage() {
   }
 
   const subtotal = getSubtotal()
-  const impuestos = Math.round(subtotal * 0.19)
+
+  // Calcular IVA solo para productos con conIVA: true
+  const impuestos = items.reduce((total, item) => {
+    if (item.conIVA) {
+      return total + Math.round(item.precio * item.cantidad * 0.19)
+    }
+    return total
+  }, 0)
+
   const envio = 0
-  const total = getTotal()
+  const total = subtotal + impuestos + envio
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -93,8 +137,9 @@ export default function CheckoutPage() {
       !formData.nombre ||
       !formData.email ||
       !formData.telefono ||
-      !formData.direccion ||
-      !formData.ciudad
+      !formData.calle ||
+      !formData.numero ||
+      !formData.comuna
     ) {
       toast.error('Completa todos los campos requeridos')
       return
@@ -109,7 +154,10 @@ export default function CheckoutPage() {
         email: user?.email,
         nombre: formData.nombre,
         telefono: formData.telefono,
-        direccion: `${formData.direccion}, ${formData.ciudad}`,
+        calle: formData.calle,
+        numero: formData.numero,
+        anexo: formData.anexo,
+        comuna: formData.comuna,
         metodoPago: formData.metodoPago,
         estado: 'pendiente',
         subtotal,
@@ -198,7 +246,7 @@ export default function CheckoutPage() {
                     />
                   </div>
 
-                  <div>
+                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Teléfono *
                     </label>
@@ -221,32 +269,68 @@ export default function CheckoutPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Dirección *
+                      Calle *
                     </label>
                     <input
                       type="text"
-                      name="direccion"
-                      value={formData.direccion}
+                      name="calle"
+                      value={formData.calle}
                       onChange={handleChange}
                       required
-                      placeholder="Calle, número, piso, depto"
+                      placeholder="Nombre de la calle"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                     />
                   </div>
 
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Número *
+                      </label>
+                      <input
+                        type="text"
+                        name="numero"
+                        value={formData.numero}
+                        onChange={handleChange}
+                        required
+                        placeholder="Ej: 1234"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Anexo/Departamento
+                      </label>
+                      <input
+                        type="text"
+                        name="anexo"
+                        value={formData.anexo}
+                        onChange={handleChange}
+                        placeholder="Ej: Dpto 4B (opcional)"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                      />
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Ciudad *
+                      Comuna *
                     </label>
-                    <input
-                      type="text"
-                      name="ciudad"
-                      value={formData.ciudad}
+                    <select
+                      name="comuna"
+                      value={formData.comuna}
                       onChange={handleChange}
                       required
-                      placeholder="Santiago, Valparaíso, etc"
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                    />
+                    >
+                      <option value="">Selecciona tu comuna</option>
+                      <option value="Las Condes">Las Condes</option>
+                      <option value="Providencia">Providencia</option>
+                      <option value="Vitacura">Vitacura</option>
+                      <option value="Lo Barnechea">Lo Barnechea</option>
+                      <option value="Ñuñoa">Ñuñoa</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -267,31 +351,11 @@ export default function CheckoutPage() {
                     />
                     <span className="ml-3 text-gray-700">Transferencia Bancaria</span>
                   </label>
-
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="metodoPago"
-                      value="efectivo"
-                      checked={formData.metodoPago === 'efectivo'}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-green-600"
-                    />
-                    <span className="ml-3 text-gray-700">Efectivo al Recibir</span>
-                  </label>
-
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="metodoPago"
-                      value="tarjeta"
-                      checked={formData.metodoPago === 'tarjeta'}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-green-600"
-                    />
-                    <span className="ml-3 text-gray-700">Tarjeta de Crédito/Débito</span>
-                  </label>
                 </div>
+
+                <p className="text-xs text-gray-500 mt-3">
+                  Por ahora solo aceptamos transferencias bancarias.
+                </p>
               </div>
 
               {/* Comentarios */}
@@ -341,7 +405,9 @@ export default function CheckoutPage() {
                     <div key={item.id} className="flex justify-between text-sm">
                       <div>
                         <p className="font-medium text-gray-900">{item.nombre}</p>
-                        <p className="text-gray-500">x{item.cantidad}</p>
+                        <p className="text-gray-500">
+                          x{item.cantidad} {item.unidadVenta === 'kilo' ? 'kilos' : 'unidades'}
+                        </p>
                       </div>
                       <p className="font-medium text-gray-900">
                         ${(item.precio * item.cantidad).toLocaleString()}
@@ -358,10 +424,12 @@ export default function CheckoutPage() {
                   <span>${subtotal.toLocaleString()}</span>
                 </div>
 
-                <div className="flex justify-between text-gray-700">
-                  <span>Impuestos (19%):</span>
-                  <span>${impuestos.toLocaleString()}</span>
-                </div>
+                {impuestos > 0 && (
+                  <div className="flex justify-between text-gray-700">
+                    <span>Impuestos (19%):</span>
+                    <span>${impuestos.toLocaleString()}</span>
+                  </div>
+                )}
 
                 <div className="flex justify-between text-gray-700">
                   <span>Envío:</span>
@@ -369,7 +437,8 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center">
+              {/* Total Final */}
+              <div className="flex justify-between items-center pt-4">
                 <span className="text-lg font-bold text-gray-900">Total:</span>
                 <span className="text-2xl font-bold text-green-600">
                   ${total.toLocaleString()}

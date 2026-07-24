@@ -223,7 +223,7 @@ export default function EditarProductoPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Stock *
+                    {formData.unidadVenta === 'unidad' ? 'Unidades disponibles' : 'Kilos disponibles'} *
                   </label>
                   <input
                     type="number"
@@ -232,9 +232,26 @@ export default function EditarProductoPage() {
                     onChange={handleChange}
                     required
                     min="0"
+                    step={formData.unidadVenta === 'unidad' ? '1' : '0.5'}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                   />
                 </div>
+              </div>
+
+              {/* Tipo de Venta */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tipo de Venta *
+                </label>
+                <select
+                  name="unidadVenta"
+                  value={formData.unidadVenta || 'kilo'}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                >
+                  <option value="unidad">Por Unidad</option>
+                  <option value="kilo">Por Kilo</option>
+                </select>
               </div>
 
               {/* Categoría y Peso */}
@@ -292,6 +309,17 @@ export default function EditarProductoPage() {
                     className="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-600"
                   />
                   <span className="ml-3 text-sm text-gray-700">Destacado en la tienda</span>
+                </label>
+
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="conIVA"
+                    checked={formData.conIVA || false}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-green-600 rounded focus:ring-2 focus:ring-green-600"
+                  />
+                  <span className="ml-3 text-sm text-gray-700">Aplicar IVA (19%)</span>
                 </label>
               </div>
 

@@ -2,11 +2,13 @@
 
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
+import { useCart } from '@/hooks/useCart'
 import { FiLogOut, FiUser, FiShoppingCart } from 'react-icons/fi'
 import { useState } from 'react'
 
 export function Header() {
   const { user, isAdmin, logout, isAuthenticated } = useAuth()
+  const { items } = useCart()
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const handleLogout = async () => {
@@ -59,9 +61,11 @@ export function Header() {
             {!isAdmin && (
               <Link href="/carrito" className="relative hover:text-green-100 transition">
                 <FiShoppingCart className="text-2xl" />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  0
-                </span>
+                {items.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {items.length}
+                  </span>
+                )}
               </Link>
             )}
 

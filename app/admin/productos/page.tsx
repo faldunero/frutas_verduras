@@ -228,7 +228,7 @@ export default function ProductosPage() {
                         Precio
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                        Stock
+                        Disponible
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                         Categoría

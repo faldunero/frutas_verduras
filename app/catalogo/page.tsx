@@ -24,6 +24,8 @@ export default function CatalogoPage() {
   const [precioMax, setPrecioMax] = useState<number>(50000)
   const [soloDisponibles, setSoloDisponibles] = useState<boolean>(true)
   const [ordenar, setOrdenar] = useState<'relevancia' | 'precio-asc' | 'precio-desc' | 'nombre' | 'rating'>('relevancia')
+  const [selectedProduct, setSelectedProduct] = useState<(Producto & { id: string }) | null>(null)
+  const [cantidadSeleccionada, setCantidadSeleccionada] = useState<number>(1)
   const { addItem } = useCart()
 
   // Filtrar y ordenar productos
@@ -98,8 +100,16 @@ export default function CatalogoPage() {
   }
 
   const handleAgregar = (producto: Producto & { id: string }) => {
-    addItem(producto, 1)
-    toast.success(`${producto.nombre} agregado al carrito`)
+    setSelectedProduct(producto)
+    setCantidadSeleccionada(1)
+  }
+
+  const handleConfirmarAgregar = () => {
+    if (!selectedProduct) return
+    addItem(selectedProduct, cantidadSeleccionada)
+    toast.success(`${selectedProduct.nombre} agregado al carrito`)
+    setSelectedProduct(null)
+    setCantidadSeleccionada(1)
   }
 
   return (
@@ -291,7 +301,9 @@ export default function CatalogoPage() {
                             ${producto.precio.toLocaleString('es-CL')}
                           </span>
                           <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                            Stock: {producto.stock}
+                            {producto.unidadVenta === 'kilo'
+                              ? `Kilos: ${producto.stock}`
+                              : `Unidades: ${producto.stock}`}
                           </span>
                         </div>
                       ) : (
@@ -328,6 +340,65 @@ export default function CatalogoPage() {
           </Link>
         </div>
       </div>
+
+      {/* Modal de cantidad */}
+      {selectedProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+            <h2 className="text-2xl font-bold mb-4">{selectedProduct.nombre}</h2>
+
+            <p className="text-gray-600 mb-6">
+              {selectedProduct.unidadVenta === 'kilo'
+                ? '¿Cuántos kilos deseas?'
+                : '¿Cuántas unidades deseas?'}
+            </p>
+
+            <div className="flex items-center gap-4 mb-6">
+              <button
+                onClick={() => setCantidadSeleccionada(Math.max(1, cantidadSeleccionada - (selectedProduct.unidadVenta === 'kilo' ? 0.5 : 1)))}
+                className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded font-bold"
+              >
+                −
+              </button>
+
+              <input
+                type="number"
+                value={cantidadSeleccionada}
+                onChange={(e) => setCantidadSeleccionada(Math.max(0, parseFloat(e.target.value) || 0))}
+                step={selectedProduct.unidadVenta === 'kilo' ? '0.5' : '1'}
+                min="0"
+                className="flex-1 text-center px-3 py-2 border-2 border-green-600 rounded text-lg font-bold"
+              />
+
+              <button
+                onClick={() => setCantidadSeleccionada(cantidadSeleccionada + (selectedProduct.unidadVenta === 'kilo' ? 0.5 : 1))}
+                className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded font-bold"
+              >
+                +
+              </button>
+            </div>
+
+            <p className="text-lg font-bold text-green-600 mb-6">
+              ${(selectedProduct.precio * cantidadSeleccionada).toLocaleString('es-CL')}
+            </p>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setSelectedProduct(null)}
+                className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-900 font-bold py-2 px-4 rounded transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmarAgregar}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition"
+              >
+                Agregar al carrito
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

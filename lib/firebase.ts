@@ -108,3 +108,15 @@ export interface AnalisisHistorico {
   timestamp: Date
   createdAt: Date
 }
+
+export interface SolicitudARCOP {
+  id: string
+  userId?: string
+  nombre: string
+  email: string
+  tipo: 'acceso' | 'rectificacion' | 'cancelacion' | 'oposicion' | 'portabilidad'
+  descripcion: string
+  estado: 'pendiente' | 'procesada' | 'rechazada'
+  createdAt: Date
+  respondidoAt?: Date
+}

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
+import { db } from '@/lib/firebase'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 
 export default function PrivacidadDatosPage() {
@@ -32,8 +34,16 @@ export default function PrivacidadDatosPage() {
     }
 
     try {
-      // Simular envío (en producción, guardar en BD)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      // Guardar en Firestore
+      await addDoc(collection(db, 'solicitudesARCOP'), {
+        userId: user?.uid || null,
+        nombre: formData.nombre,
+        email: formData.email,
+        tipo: formData.tipo,
+        descripcion: formData.descripcion,
+        estado: 'pendiente',
+        createdAt: serverTimestamp(),
+      })
 
       toast.success('Solicitud enviada. Responderemos en máximo lo antes posible')
       setEnviado(true)
@@ -46,6 +56,7 @@ export default function PrivacidadDatosPage() {
 
       setTimeout(() => setEnviado(false), 5000)
     } catch (error) {
+      console.error('Error al enviar solicitud:', error)
       toast.error('Error al enviar la solicitud')
     }
   }

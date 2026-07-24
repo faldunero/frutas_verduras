@@ -36,6 +36,9 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-8">
             {isAdmin ? (
               <>
+                <Link href="/admin/dashboard" className="hover:text-green-100 transition">
+                  Dashboard
+                </Link>
                 <Link href="/admin/productos" className="hover:text-green-100 transition">
                   Productos
                 </Link>
@@ -133,9 +136,12 @@ export function Header() {
         </div>
 
         {/* Mobile Menu */}
-        <div className="md:hidden pb-4 flex gap-4">
+        <div className="md:hidden pb-4 flex gap-4 flex-wrap">
           {isAdmin ? (
             <>
+              <Link href="/admin/dashboard" className="text-sm hover:text-green-100">
+                Dashboard
+              </Link>
               <Link href="/admin/productos" className="text-sm hover:text-green-100">
                 Productos
               </Link>

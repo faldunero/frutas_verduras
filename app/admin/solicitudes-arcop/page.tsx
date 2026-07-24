@@ -46,6 +46,7 @@ export default function SolicitudesARCOPPage() {
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('todos')
   const [actualizando, setActualizando] = useState<string | null>(null)
+  const [zoom, setZoom] = useState<number>(100)
 
   const loadSolicitudes = async () => {
     try {
@@ -123,32 +124,49 @@ export default function SolicitudesARCOPPage() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gray-50 py-12" style={{ fontSize: `${zoom}%` }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900">Solicitudes ARCOP</h1>
-            <p className="text-gray-600 mt-2">Gestión de derechos ARCOP (Ley 21.719)</p>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">Solicitudes ARCOP</h1>
+            <p className="text-sm text-gray-600 mt-2">Gestión de derechos ARCOP (Ley 21.719)</p>
           </div>
-          <Link
-            href="/admin/productos"
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-          >
-            <FiArrowLeft size={20} />
-            Volver
-          </Link>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-300">
+              <button
+                onClick={() => setZoom(Math.max(80, zoom - 10))}
+                className="text-gray-600 hover:text-gray-900 font-bold text-lg"
+              >
+                −
+              </button>
+              <span className="text-sm font-medium min-w-12 text-center">{zoom}%</span>
+              <button
+                onClick={() => setZoom(Math.min(150, zoom + 10))}
+                className="text-gray-600 hover:text-gray-900 font-bold text-lg"
+              >
+                +
+              </button>
+            </div>
+            <Link
+              href="/admin/productos"
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <FiArrowLeft size={18} />
+              Volver
+            </Link>
+          </div>
         </div>
 
         {/* Filtros */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="mb-4">
-            <h3 className="text-sm font-bold text-gray-700 mb-3">Filtrar por estado:</h3>
+        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          <div className="mb-3">
+            <h3 className="text-xs font-bold text-gray-700 mb-2">Filtrar por estado:</h3>
             <div className="flex flex-wrap gap-2">
               {['todos', 'pendiente', 'procesada', 'rechazada'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setFiltro(status)}
-                  className={`px-4 py-2 rounded-lg font-medium transition ${
+                  className={`px-3 py-1 text-sm rounded-lg font-medium transition ${
                     filtro === status
                       ? 'bg-green-600 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -159,7 +177,7 @@ export default function SolicitudesARCOPPage() {
               ))}
             </div>
           </div>
-          <p className="text-sm text-gray-600">
+          <p className="text-xs text-gray-600">
             Total: <span className="font-bold text-green-600">{solicitudesFiltradas.length} solicitudes</span>
           </p>
         </div>
@@ -177,29 +195,29 @@ export default function SolicitudesARCOPPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6">
+          <div className="grid gap-4">
             {solicitudesFiltradas.map((solicitud) => (
               <div
                 key={solicitud.id}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition p-6"
+                className="bg-white rounded-lg shadow hover:shadow-lg transition p-4"
               >
-                <div className="grid md:grid-cols-4 gap-4 mb-4">
+                <div className="grid md:grid-cols-4 gap-3 mb-3">
                   <div>
-                    <p className="text-sm text-gray-600">Tipo de Solicitud</p>
-                    <p className="font-bold text-gray-900">{tipoLabels[solicitud.tipo]}</p>
+                    <p className="text-xs text-gray-600">Tipo de Solicitud</p>
+                    <p className="font-bold text-gray-900 text-sm">{tipoLabels[solicitud.tipo]}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Nombre</p>
-                    <p className="font-bold text-gray-900">{solicitud.nombre}</p>
+                    <p className="text-xs text-gray-600">Nombre</p>
+                    <p className="font-bold text-gray-900 text-sm">{solicitud.nombre}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Email</p>
-                    <p className="font-bold text-gray-900 text-sm">{solicitud.email}</p>
+                    <p className="text-xs text-gray-600">Email</p>
+                    <p className="text-gray-900 text-xs">{solicitud.email}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Estado</p>
+                    <p className="text-xs text-gray-600">Estado</p>
                     <span
-                      className={`inline-block px-3 py-1 rounded-full text-sm font-bold ${
+                      className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${
                         estadoColors[solicitud.estado]
                       }`}
                     >
@@ -208,15 +226,15 @@ export default function SolicitudesARCOPPage() {
                   </div>
                 </div>
 
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 mb-1">Detalles:</p>
-                  <p className="text-gray-700 text-sm">
+                <div className="mb-3">
+                  <p className="text-xs text-gray-600 mb-1">Detalles:</p>
+                  <p className="text-gray-700 text-xs">
                     {solicitud.descripcion || '(Sin detalles adicionales)'}
                   </p>
                 </div>
 
-                <div className="border-t pt-4 flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex gap-4 text-sm text-gray-600">
+                <div className="border-t pt-3 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex gap-3 text-xs text-gray-600">
                     <div>
                       <p className="text-xs text-gray-500">Solicitado:</p>
                       <p className="font-medium">
@@ -237,17 +255,17 @@ export default function SolicitudesARCOPPage() {
                     <button
                       onClick={() => cambiarEstado(solicitud.id, 'procesada')}
                       disabled={actualizando === solicitud.id || solicitud.estado === 'procesada'}
-                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded transition"
+                      className="flex items-center gap-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-1 px-3 rounded text-sm transition"
                     >
-                      <FiCheck size={16} />
+                      <FiCheck size={14} />
                       Procesar
                     </button>
                     <button
                       onClick={() => cambiarEstado(solicitud.id, 'rechazada')}
                       disabled={actualizando === solicitud.id || solicitud.estado === 'rechazada'}
-                      className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded transition"
+                      className="flex items-center gap-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-bold py-1 px-3 rounded text-sm transition"
                     >
-                      <FiX size={16} />
+                      <FiX size={14} />
                       Rechazar
                     </button>
                   </div>

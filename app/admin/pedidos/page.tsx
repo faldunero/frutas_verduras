@@ -54,6 +54,8 @@ export default function PedidosPage() {
   const [ordenes, setOrdenes] = useState<Orden[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('todos')
+  const [fechaDesde, setFechaDesde] = useState<string>('')
+  const [fechaHasta, setFechaHasta] = useState<string>('')
 
   const loadOrdenes = async () => {
     try {
@@ -95,8 +97,23 @@ export default function PedidosPage() {
     )
   }
 
-  const ordenesFiltradas =
-    filtro === 'todos' ? ordenes : ordenes.filter((o) => o.estado === filtro)
+  const ordenesFiltradas = ordenes
+    .filter((o) => (filtro === 'todos' ? true : o.estado === filtro))
+    .filter((o) => {
+      if (!fechaDesde && !fechaHasta) return true
+      const fechaOrden = new Date(o.createdAt?.toDate?.() || o.createdAt)
+      if (fechaDesde) {
+        const desde = new Date(fechaDesde)
+        desde.setHours(0, 0, 0, 0)
+        if (fechaOrden < desde) return false
+      }
+      if (fechaHasta) {
+        const hasta = new Date(fechaHasta)
+        hasta.setHours(23, 59, 59, 999)
+        if (fechaOrden > hasta) return false
+      }
+      return true
+    })
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -116,26 +133,68 @@ export default function PedidosPage() {
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <div className="flex items-center gap-2 mb-4">
             <FiFilter size={20} />
-            <span className="font-bold">Filtrar por estado:</span>
+            <span className="font-bold">Filtros:</span>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {['todos', 'pendiente', 'confirmada', 'despachada', 'entregada', 'cancelada'].map(
-              (status) => (
-                <button
-                  key={status}
-                  onClick={() => setFiltro(status)}
-                  className={`px-4 py-2 rounded-lg font-medium transition ${
-                    filtro === status
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {status === 'todos' ? 'Todos' : statusLabels[status]}
-                </button>
-              )
+
+          {/* Filtro por Estado */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-gray-700 mb-3">Por estado:</h3>
+            <div className="flex flex-wrap gap-2">
+              {['todos', 'pendiente', 'confirmada', 'despachada', 'entregada', 'cancelada'].map(
+                (status) => (
+                  <button
+                    key={status}
+                    onClick={() => setFiltro(status)}
+                    className={`px-4 py-2 rounded-lg font-medium transition ${
+                      filtro === status
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    {status === 'todos' ? 'Todos' : statusLabels[status]}
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+
+          {/* Filtro por Fecha */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-gray-700 mb-3">Por fecha:</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-gray-600">Desde:</label>
+                <input
+                  type="date"
+                  value={fechaDesde}
+                  onChange={(e) => setFechaDesde(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-600">Hasta:</label>
+                <input
+                  type="date"
+                  value={fechaHasta}
+                  onChange={(e) => setFechaHasta(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                />
+              </div>
+            </div>
+            {(fechaDesde || fechaHasta) && (
+              <button
+                onClick={() => {
+                  setFechaDesde('')
+                  setFechaHasta('')
+                }}
+                className="text-sm text-green-600 hover:text-green-700 mt-2 font-medium"
+              >
+                Limpiar fechas
+              </button>
             )}
           </div>
-          <p className="text-sm text-gray-600 mt-4">
+
+          <p className="text-sm text-gray-600">
             Total: {ordenesFiltradas.length} pedidos
           </p>
         </div>

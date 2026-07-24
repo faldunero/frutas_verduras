@@ -195,40 +195,36 @@ export default function AnalizadorPage() {
             <p className="text-gray-600">No hay productos que coincidan con tu búsqueda</p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-green-600 text-white">
-                  <tr>
-                    <th className="px-6 py-3 text-left font-medium">Producto</th>
-                    <th className="px-6 py-3 text-center font-medium">Precio Actual</th>
-                    <th className="px-6 py-3 text-center font-medium">Costo</th>
-                    <th className="px-6 py-3 text-center font-medium">Competencia 1</th>
-                    <th className="px-6 py-3 text-center font-medium">Competencia 2</th>
-                    <th className="px-6 py-3 text-center font-medium">Promedio</th>
-                    <th className="px-6 py-3 text-center font-medium">Sugerido</th>
-                    <th className="px-6 py-3 text-center font-medium">Estado</th>
-                    <th className="px-6 py-3 text-center font-medium">Guardar</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {productosFiltrados.map((producto, idx) => {
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Producto</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Precio Actual</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Costo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Competencia 1</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Competencia 2</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Promedio</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Sugerido</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Estado</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Guardar</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {productosFiltrados.map((producto, idx) => {
                     const promedioCompetencia = calcularPromedioCompetencia(producto)
                     const precioSugerido = calcularPrecioSugerido(producto)
                     const esCompetitivo =
                       precioSugerido <= promedioCompetencia && promedioCompetencia > 0
 
                     return (
-                      <tr
-                        key={producto.id}
-                        className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                      >
-                        <td className="px-6 py-4 font-medium text-gray-900">{producto.nombre}</td>
+                      <tr key={producto.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <p className="font-semibold text-gray-900">{producto.nombre}</p>
+                        </td>
 
-                        <td className="px-6 py-4 text-center">
-                          <span className="font-bold text-green-600">
-                            ${producto.precio.toLocaleString('es-CL')}
-                          </span>
+                        <td className="px-6 py-4 text-gray-900">
+                          ${producto.precio.toLocaleString('es-CL')}
                         </td>
 
                         <td className="px-6 py-4">
@@ -239,12 +235,12 @@ export default function AnalizadorPage() {
                               handleCostoChange(producto.id, parseFloat(e.target.value) || 0)
                             }
                             placeholder="0"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-green-600"
+                            className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
                           />
                         </td>
 
                         <td className="px-6 py-4">
-                          <div className="space-y-2">
+                          <div className="space-y-1 w-32">
                             <input
                               type="text"
                               placeholder="Empresa"
@@ -252,7 +248,7 @@ export default function AnalizadorPage() {
                               onChange={(e) =>
                                 handleCompetenciaChange(producto.id, 0, 'empresa', e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-600"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
                             />
                             <input
                               type="number"
@@ -261,13 +257,13 @@ export default function AnalizadorPage() {
                               onChange={(e) =>
                                 handleCompetenciaChange(producto.id, 0, 'precio', e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-green-600"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
                             />
                           </div>
                         </td>
 
                         <td className="px-6 py-4">
-                          <div className="space-y-2">
+                          <div className="space-y-1 w-32">
                             <input
                               type="text"
                               placeholder="Empresa"
@@ -275,7 +271,7 @@ export default function AnalizadorPage() {
                               onChange={(e) =>
                                 handleCompetenciaChange(producto.id, 1, 'empresa', e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-green-600"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
                             />
                             <input
                               type="number"
@@ -284,14 +280,14 @@ export default function AnalizadorPage() {
                               onChange={(e) =>
                                 handleCompetenciaChange(producto.id, 1, 'precio', e.target.value)
                               }
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs text-center focus:outline-none focus:ring-2 focus:ring-green-600"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
                             />
                           </div>
                         </td>
 
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-6 py-4 text-gray-900">
                           {promedioCompetencia > 0 ? (
-                            <span className="font-bold text-blue-600">
+                            <span className="font-semibold text-blue-600">
                               ${Math.round(promedioCompetencia).toLocaleString('es-CL')}
                             </span>
                           ) : (
@@ -299,9 +295,9 @@ export default function AnalizadorPage() {
                           )}
                         </td>
 
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-6 py-4 text-gray-900">
                           {producto.costo ? (
-                            <span className="font-bold text-green-600">
+                            <span className="font-semibold text-green-600">
                               ${precioSugerido.toLocaleString('es-CL')}
                             </span>
                           ) : (
@@ -309,10 +305,10 @@ export default function AnalizadorPage() {
                           )}
                         </td>
 
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-6 py-4">
                           {promedioCompetencia > 0 && producto.costo ? (
                             <span
-                              className={`text-xs font-bold px-3 py-1 rounded ${
+                              className={`px-3 py-1 rounded text-sm font-medium ${
                                 esCompetitivo
                                   ? 'bg-green-100 text-green-800'
                                   : 'bg-red-100 text-red-800'
@@ -321,15 +317,15 @@ export default function AnalizadorPage() {
                               {esCompetitivo ? '✓ Competitivo' : '✗ Caro'}
                             </span>
                           ) : (
-                            <span className="text-gray-400 text-xs">-</span>
+                            <span className="text-gray-400">-</span>
                           )}
                         </td>
 
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-6 py-4">
                           <button
                             onClick={() => guardarProducto(producto)}
                             disabled={saving}
-                            className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400 font-medium text-sm"
+                            className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded inline-flex items-center gap-2"
                           >
                             <FiSave size={16} />
                             Guardar

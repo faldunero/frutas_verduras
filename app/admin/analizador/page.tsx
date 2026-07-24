@@ -16,6 +16,7 @@ interface Producto {
   competencia?: Array<{ empresa: string; precio: number }>
   categoria: string
   unidadVenta?: 'unidad' | 'kilo'
+  updatedAt?: any
 }
 
 export default function AnalizadorPage() {
@@ -266,6 +267,7 @@ export default function AnalizadorPage() {
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Promedio</th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Sugerido</th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Estado</th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Actualización</th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 uppercase">Guardar</th>
                 </tr>
               </thead>
@@ -377,6 +379,22 @@ export default function AnalizadorPage() {
                             >
                               {esCompetitivo ? '✓ OK' : '✗'}
                             </span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+
+                        <td className="px-3 py-2 text-xs text-gray-600">
+                          {producto.updatedAt ? (
+                            <div className="whitespace-nowrap">
+                              <p>{new Date(producto.updatedAt?.toDate?.() || producto.updatedAt).toLocaleDateString('es-CL')}</p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(producto.updatedAt?.toDate?.() || producto.updatedAt).toLocaleTimeString('es-CL', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </p>
+                            </div>
                           ) : (
                             <span className="text-gray-400">-</span>
                           )}

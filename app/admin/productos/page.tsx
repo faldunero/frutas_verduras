@@ -18,6 +18,7 @@ interface Producto {
   disponible: boolean
   destacado: boolean
   stock: number
+  updatedAt?: any
 }
 
 const productosIniciales = [
@@ -228,7 +229,7 @@ export default function ProductosPage() {
                         Precio
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                        Disponible
+                        Stock
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                         Categoría
@@ -238,6 +239,9 @@ export default function ProductosPage() {
                       </th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase">
                         ⭐ Destacado
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                        Última Actualización
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                         Acciones
@@ -285,6 +289,21 @@ export default function ProductosPage() {
                           <span className="text-xl">
                             {producto.destacado ? '⭐' : '☆'}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {producto.updatedAt ? (
+                            <div>
+                              <p>{new Date(producto.updatedAt?.toDate?.() || producto.updatedAt).toLocaleDateString('es-CL')}</p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(producto.updatedAt?.toDate?.() || producto.updatedAt).toLocaleTimeString('es-CL', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </p>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-sm space-x-2">
                           <Link

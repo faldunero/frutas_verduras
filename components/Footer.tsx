@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300 mt-12">
@@ -19,24 +21,24 @@ export function Footer() {
             <h4 className="text-white font-bold mb-4">Información</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="hover:text-green-400 transition">
+                <Link href="/sobre-nosotros" className="hover:text-green-400 transition">
                   Sobre Nosotros
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-green-400 transition">
+                <Link href="/terminos" className="hover:text-green-400 transition">
                   Términos de Servicio
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-green-400 transition">
+                <Link href="/privacidad" className="hover:text-green-400 transition">
                   Política de Privacidad
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-green-400 transition">
+                <Link href="/contacto" className="hover:text-green-400 transition">
                   Contacto
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -46,24 +48,24 @@ export function Footer() {
             <h4 className="text-white font-bold mb-4">Ayuda</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="hover:text-green-400 transition">
+                <Link href="/#faqs" className="hover:text-green-400 transition">
                   Preguntas Frecuentes
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-green-400 transition">
+                <Link href="/ayuda/metodos-pago" className="hover:text-green-400 transition">
                   Métodos de Pago
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-green-400 transition">
+                <Link href="/ayuda/envios-entregas" className="hover:text-green-400 transition">
                   Envíos y Entregas
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-green-400 transition">
+                <Link href="/ayuda/cambios-devoluciones" className="hover:text-green-400 transition">
                   Cambios y Devoluciones
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -82,17 +84,11 @@ export function Footer() {
 
         <div className="border-t border-gray-700 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center text-sm">
-            <p>&copy; 2024 Frutas & Verduras. Todos los derechos reservados.</p>
+            <p>&copy; 2026 Frutas & Verduras. Todos los derechos reservados.</p>
             <div className="flex gap-4 mt-4 md:mt-0">
-              <a href="#" className="hover:text-green-400 transition">
-                Facebook
-              </a>
-              <a href="#" className="hover:text-green-400 transition">
-                Instagram
-              </a>
-              <a href="#" className="hover:text-green-400 transition">
-                Twitter
-              </a>
+              <Link href="/privacidad-datos" className="hover:text-green-400 transition">
+                🔐 Gestionar Datos (ARCOP)
+              </Link>
             </div>
           </div>
         </div>

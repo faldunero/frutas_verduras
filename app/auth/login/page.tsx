@@ -1,23 +1,40 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { FiEye, FiEyeOff } from 'react-icons/fi'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [mostrarContrasena, setMostrarContrasena] = useState(false)
+  const [recordarCuenta, setRecordarCuenta] = useState(false)
   const { login } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    const emailGuardado = localStorage.getItem('frutasVerduras_emailRecordado')
+    if (emailGuardado) {
+      setEmail(emailGuardado)
+      setRecordarCuenta(true)
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
+      if (recordarCuenta) {
+        localStorage.setItem('frutasVerduras_emailRecordado', email)
+      } else {
+        localStorage.removeItem('frutasVerduras_emailRecordado')
+      }
+
       await login(email, password)
       toast.success('Bienvenido!')
       router.push('/')
@@ -26,6 +43,12 @@ export default function LoginPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleLimpiarEmail = () => {
+    setEmail('')
+    setRecordarCuenta(false)
+    localStorage.removeItem('frutasVerduras_emailRecordado')
   }
 
   return (
@@ -49,23 +72,60 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="off"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
               placeholder="tu@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Contraseña
+              </label>
+              <Link href="/auth/recuperar" className="text-xs text-green-600 hover:text-green-700 font-medium">
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
+            <div className="relative">
+              <input
+                type={mostrarContrasena ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {mostrarContrasena ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={recordarCuenta}
+                onChange={(e) => setRecordarCuenta(e.target.checked)}
+                className="w-4 h-4 text-green-600 rounded"
+              />
+              <span className="ml-2 text-sm text-gray-700">Recordar esta cuenta</span>
             </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-              placeholder="••••••••"
-            />
+            {email && (
+              <button
+                type="button"
+                onClick={handleLimpiarEmail}
+                className="text-xs text-gray-500 hover:text-gray-700"
+              >
+                Limpiar
+              </button>
+            )}
           </div>
 
           <button
@@ -87,17 +147,6 @@ export default function LoginPage() {
             Regístrate aquí
           </Link>
         </p>
-
-        {/* Demo Credentials */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <p className="text-xs font-semibold text-blue-900 mb-2">
-            Demo (Cliente):
-          </p>
-          <p className="text-xs text-blue-800">
-            📧 cliente@test.com<br />
-            🔑 password123
-          </p>
-        </div>
       </div>
     </div>
   )

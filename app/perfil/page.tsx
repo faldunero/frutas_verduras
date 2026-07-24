@@ -11,7 +11,10 @@ import Link from 'next/link'
 interface PerfilData {
   nombre: string
   telefono: string
-  direccion: string
+  calle: string
+  numero: string
+  anexo: string
+  comuna: string
 }
 
 export default function PerfilPage() {
@@ -22,7 +25,10 @@ export default function PerfilPage() {
   const [perfil, setPerfil] = useState<PerfilData>({
     nombre: '',
     telefono: '',
-    direccion: '',
+    calle: '',
+    numero: '',
+    anexo: '',
+    comuna: '',
   })
 
   useEffect(() => {
@@ -43,7 +49,10 @@ export default function PerfilPage() {
         setPerfil({
           nombre: data.nombre || '',
           telefono: data.telefono || '',
-          direccion: data.direccion || '',
+          calle: data.calle || '',
+          numero: data.numero || '',
+          anexo: data.anexo || '',
+          comuna: data.comuna || '',
         })
       }
     } catch (error) {
@@ -54,7 +63,7 @@ export default function PerfilPage() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setPerfil((prev) => ({
       ...prev,
@@ -71,7 +80,10 @@ export default function PerfilPage() {
       await updateDoc(doc(db, 'users', user?.uid!), {
         nombre: perfil.nombre,
         telefono: perfil.telefono,
-        direccion: perfil.direccion,
+        calle: perfil.calle,
+        numero: perfil.numero,
+        anexo: perfil.anexo,
+        comuna: perfil.comuna,
       })
 
       toast.success('Perfil actualizado')
@@ -115,31 +127,35 @@ export default function PerfilPage() {
             </div>
           </div>
 
-          {/* Formulario de Perfil */}
+          {/* Formulario de Despacho */}
           <form onSubmit={handleSubmit} className="space-y-6">
+            <h2 className="text-xl font-bold mb-6">Datos de Despacho</h2>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre Completo
+                Nombre Completo *
               </label>
               <input
                 type="text"
                 name="nombre"
                 value={perfil.nombre}
                 onChange={handleChange}
+                required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                placeholder="Tu nombre"
+                placeholder="Tu nombre completo"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Teléfono
+                Teléfono *
               </label>
               <input
                 type="tel"
                 name="telefono"
                 value={perfil.telefono}
                 onChange={handleChange}
+                required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                 placeholder="+56 9 1234 5678"
               />
@@ -147,16 +163,68 @@ export default function PerfilPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Dirección
+                Calle *
               </label>
-              <textarea
-                name="direccion"
-                value={perfil.direccion}
+              <input
+                type="text"
+                name="calle"
+                value={perfil.calle}
                 onChange={handleChange}
-                rows={3}
+                required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                placeholder="Tu dirección de envío"
+                placeholder="Nombre de la calle"
               />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Número *
+                </label>
+                <input
+                  type="text"
+                  name="numero"
+                  value={perfil.numero}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                  placeholder="Ej: 1234"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Anexo/Departamento
+                </label>
+                <input
+                  type="text"
+                  name="anexo"
+                  value={perfil.anexo}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                  placeholder="Ej: Dpto 4B (opcional)"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Comuna *
+              </label>
+              <select
+                name="comuna"
+                value={perfil.comuna}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+              >
+                <option value="">Selecciona tu comuna</option>
+                <option value="Las Condes">Las Condes</option>
+                <option value="Providencia">Providencia</option>
+                <option value="Vitacura">Vitacura</option>
+                <option value="Lo Barnechea">Lo Barnechea</option>
+                <option value="Ñuñoa">Ñuñoa</option>
+              </select>
             </div>
 
             <div className="flex gap-4">

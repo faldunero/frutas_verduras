@@ -32,28 +32,38 @@ export function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            <Link href="/catalogo" className="hover:text-green-100 transition">
-              Catálogo
-            </Link>
-            <Link href="/#faqs" className="hover:text-green-100 transition">
-              FAQs
-            </Link>
-            {isAdmin && (
-              <Link href="/admin/dashboard" className="hover:text-green-100 transition">
-                Admin
-              </Link>
+            {isAdmin ? (
+              <>
+                <Link href="/admin/productos" className="hover:text-green-100 transition">
+                  Productos
+                </Link>
+                <Link href="/admin/pedidos" className="hover:text-green-100 transition">
+                  Pedidos
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/catalogo" className="hover:text-green-100 transition">
+                  Catálogo
+                </Link>
+                <Link href="/#faqs" className="hover:text-green-100 transition">
+                  FAQs
+                </Link>
+              </>
             )}
           </nav>
 
           {/* Right Section */}
           <div className="flex items-center gap-6">
-            {/* Carrito */}
-            <Link href="/carrito" className="relative hover:text-green-100 transition">
-              <FiShoppingCart className="text-2xl" />
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                0
-              </span>
-            </Link>
+            {/* Carrito - Solo para clientes */}
+            {!isAdmin && (
+              <Link href="/carrito" className="relative hover:text-green-100 transition">
+                <FiShoppingCart className="text-2xl" />
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  0
+                </span>
+              </Link>
+            )}
 
             {/* Auth Menu */}
             {isAuthenticated ? (
@@ -63,8 +73,8 @@ export function Header() {
                   className="flex items-center gap-2 hover:text-green-100 transition"
                 >
                   <FiUser className="text-2xl" />
-                  <span className="hidden sm:inline text-sm truncate max-w-32">
-                    {user?.email?.split('@')[0]}
+                  <span className="hidden sm:inline text-sm truncate max-w-48">
+                    {user?.email?.split('@')[0]} {isAdmin && '(admin)'}
                   </span>
                 </button>
 
@@ -112,16 +122,24 @@ export function Header() {
 
         {/* Mobile Menu */}
         <div className="md:hidden pb-4 flex gap-4">
-          <Link href="/catalogo" className="text-sm hover:text-green-100">
-            Catálogo
-          </Link>
-          <Link href="/#faqs" className="text-sm hover:text-green-100">
-            FAQs
-          </Link>
-          {isAdmin && (
-            <Link href="/admin/dashboard" className="text-sm hover:text-green-100">
-              Admin
-            </Link>
+          {isAdmin ? (
+            <>
+              <Link href="/admin/productos" className="text-sm hover:text-green-100">
+                Productos
+              </Link>
+              <Link href="/admin/pedidos" className="text-sm hover:text-green-100">
+                Pedidos
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/catalogo" className="text-sm hover:text-green-100">
+                Catálogo
+              </Link>
+              <Link href="/#faqs" className="text-sm hover:text-green-100">
+                FAQs
+              </Link>
+            </>
           )}
         </div>
       </div>

@@ -42,6 +42,9 @@ export function Header() {
                 <Link href="/admin/pedidos" className="hover:text-green-100 transition">
                   Pedidos
                 </Link>
+                <Link href="/admin/analizador" className="hover:text-green-100 transition">
+                  Analizador
+                </Link>
               </>
             ) : (
               <>
@@ -135,6 +138,9 @@ export function Header() {
               </Link>
               <Link href="/admin/pedidos" className="text-sm hover:text-green-100">
                 Pedidos
+              </Link>
+              <Link href="/admin/analizador" className="text-sm hover:text-green-100">
+                Analizador
               </Link>
             </>
           ) : (

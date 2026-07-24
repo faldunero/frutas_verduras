@@ -38,6 +38,11 @@ export interface User {
   createdAt: Date
 }
 
+export interface Competencia {
+  empresa: string
+  precio: number
+}
+
 export interface Producto {
   id: string
   nombre: string
@@ -51,6 +56,8 @@ export interface Producto {
   destacado: boolean
   conIVA?: boolean
   unidadVenta?: 'unidad' | 'kilo'
+  costo?: number
+  competencia?: Competencia[]
   createdAt: Date
   updatedAt: Date
 }

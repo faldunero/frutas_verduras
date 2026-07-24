@@ -1,370 +1,236 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { AdminGuard } from '@/components/AdminGuard'
+import { useAuth } from '@/hooks/useAuth'
 import { db } from '@/lib/firebase'
-import { collection, getDocs, query, orderBy } from 'firebase/firestore'
+import { collection, getDocs, orderBy, query } from 'firebase/firestore'
+import { FiFilter, FiRefreshCw } from 'react-icons/fi'
 import toast from 'react-hot-toast'
-import * as XLSX from 'xlsx'
+import Link from 'next/link'
 
-interface PedidoItem {
+interface Orden {
   id: string
   nombre: string
-  precio: number
-  cantidad: number
-}
-
-interface Pedido {
-  id: string
-  usuarioId: string
-  usuarioEmail: string
-  usuarioNombre: string
-  items: PedidoItem[]
+  email: string
+  telefono: string
+  calle: string
+  numero: string
+  anexo: string
+  comuna: string
+  metodoPago: string
+  estado: string
+  subtotal: number
+  impuestos: number
+  envio: number
   total: number
-  estado: 'pendiente' | 'completado' | 'cancelado'
-  fechaCreacion: any
-  direccion?: string
-  telefono?: string
+  items: Array<{
+    productoId: string
+    nombre: string
+    cantidad: number
+    precioUnitario: number
+    subtotal: number
+  }>
+  createdAt: any
 }
 
-export default function PedidosAdminPage() {
-  const [pedidos, setPedidos] = useState<Pedido[]>([])
+const statusColors: { [key: string]: string } = {
+  pendiente: 'bg-yellow-100 text-yellow-800',
+  confirmada: 'bg-blue-100 text-blue-800',
+  despachada: 'bg-purple-100 text-purple-800',
+  entregada: 'bg-green-100 text-green-800',
+  cancelada: 'bg-red-100 text-red-800',
+}
+
+const statusLabels: { [key: string]: string } = {
+  pendiente: 'Pendiente de Pago',
+  confirmada: 'Confirmada',
+  despachada: 'Despachada',
+  entregada: 'Entregada',
+  cancelada: 'Cancelada',
+}
+
+export default function PedidosPage() {
+  const { isAdmin, isAuthenticated } = useAuth()
+  const [ordenes, setOrdenes] = useState<Orden[]>([])
   const [loading, setLoading] = useState(true)
-  const [filtroUsuario, setFiltroUsuario] = useState('')
-  const [filtroEstado, setFiltroEstado] = useState<'' | 'pendiente' | 'completado' | 'cancelado'>('')
-  const [filtroFechaInicio, setFiltroFechaInicio] = useState('')
-  const [filtroFechaFin, setFiltroFechaFin] = useState('')
-  const [updatingPedido, setUpdatingPedido] = useState<string | null>(null)
+  const [filtro, setFiltro] = useState<string>('todos')
 
-  useEffect(() => {
-    fetchPedidos()
-  }, [])
-
-  const fetchPedidos = async () => {
+  const loadOrdenes = async () => {
     try {
-      const q = query(collection(db, 'pedidos'), orderBy('fechaCreacion', 'desc'))
-      const querySnapshot = await getDocs(q)
-      const data = querySnapshot.docs.map((doc) => ({
+      setLoading(true)
+      const q = query(collection(db, 'ordenes'), orderBy('createdAt', 'desc'))
+      const snapshot = await getDocs(q)
+      const data = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      })) as Pedido[]
-      setPedidos(data)
+      })) as Orden[]
+      setOrdenes(data)
     } catch (error) {
-      console.error('Error fetching pedidos:', error)
+      console.error('Error loading ordenes:', error)
       toast.error('Error al cargar pedidos')
     } finally {
       setLoading(false)
     }
   }
 
-  const pedidosFiltrados = pedidos.filter((pedido) => {
-    const coincideUsuario =
-      filtroUsuario === '' ||
-      pedido.usuarioEmail.toLowerCase().includes(filtroUsuario.toLowerCase()) ||
-      pedido.usuarioNombre.toLowerCase().includes(filtroUsuario.toLowerCase())
-    const coincideEstado = filtroEstado === '' || pedido.estado === filtroEstado
-
-    let coincideFecha = true
-    if (filtroFechaInicio || filtroFechaFin) {
-      const fechaPedido = pedido.fechaCreacion?.toDate?.() || new Date(0)
-      if (filtroFechaInicio) {
-        const inicio = new Date(filtroFechaInicio)
-        inicio.setHours(0, 0, 0, 0)
-        coincideFecha = coincideFecha && fechaPedido >= inicio
-      }
-      if (filtroFechaFin) {
-        const fin = new Date(filtroFechaFin)
-        fin.setHours(23, 59, 59, 999)
-        coincideFecha = coincideFecha && fechaPedido <= fin
-      }
+  useEffect(() => {
+    if (isAdmin) {
+      loadOrdenes()
     }
+  }, [isAdmin])
 
-    return coincideUsuario && coincideEstado && coincideFecha
-  })
-
-  const cambiarEstado = async (pedidoId: string, nuevoEstado: 'pendiente' | 'completado' | 'cancelado') => {
-    const pedido = pedidos.find(p => p.id === pedidoId)
-    if (!pedido) return
-
-    setUpdatingPedido(pedidoId)
-    try {
-      const response = await fetch('/api/pedidos', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pedidoId,
-          nuevoEstado,
-          usuarioEmail: pedido.usuarioEmail,
-          usuarioNombre: pedido.usuarioNombre,
-        }),
-      })
-
-      if (response.ok) {
-        setPedidos(pedidos.map(p => p.id === pedidoId ? { ...p, estado: nuevoEstado } : p))
-        toast.success('Estado actualizado y email enviado')
-      } else {
-        toast.error('Error al actualizar estado')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      toast.error('Error al actualizar estado')
-    } finally {
-      setUpdatingPedido(null)
-    }
+  if (!isAuthenticated || !isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <div className="text-6xl mb-4">🔐</div>
+            <h1 className="text-2xl font-bold mb-2">Acceso denegado</h1>
+            <p className="text-gray-600">
+              Solo los administradores pueden ver esta página
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  const exportarExcel = () => {
-    try {
-      const datos = pedidosFiltrados.map((pedido) => ({
-        'ID Pedido': pedido.id,
-        'Email Usuario': pedido.usuarioEmail,
-        'Nombre Usuario': pedido.usuarioNombre,
-        'Teléfono': pedido.telefono || '-',
-        'Dirección': pedido.direccion || '-',
-        'Cantidad de Items': pedido.items.length,
-        'Total': `$${pedido.total.toLocaleString()}`,
-        'Estado': pedido.estado,
-        'Fecha': pedido.fechaCreacion?.toDate?.()?.toLocaleDateString('es-CL') || '-',
-        'Detalles de Productos': pedido.items.map((item) => `${item.nombre} (${item.cantidad}x)`).join('; '),
-      }))
-
-      const worksheet = XLSX.utils.json_to_sheet(datos)
-      const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Pedidos')
-
-      // Ajustar ancho de columnas
-      const maxWidth = 50
-      worksheet['!cols'] = [
-        { wch: 15 }, // ID
-        { wch: 25 }, // Email
-        { wch: 20 }, // Nombre
-        { wch: 15 }, // Teléfono
-        { wch: 30 }, // Dirección
-        { wch: 12 }, // Cantidad Items
-        { wch: 12 }, // Total
-        { wch: 12 }, // Estado
-        { wch: 15 }, // Fecha
-        { wch: maxWidth }, // Detalles
-      ]
-
-      XLSX.writeFile(workbook, `Pedidos_${new Date().toISOString().split('T')[0]}.xlsx`)
-      toast.success('Archivo exportado exitosamente')
-    } catch (error) {
-      console.error('Error exporting:', error)
-      toast.error('Error al exportar Excel')
-    }
-  }
-
-  // Agrupar por usuario
-  const pedidosPorUsuario = pedidosFiltrados.reduce((acc: Record<string, Pedido[]>, pedido) => {
-    const key = pedido.usuarioEmail
-    if (!acc[key]) {
-      acc[key] = []
-    }
-    acc[key].push(pedido)
-    return acc
-  }, {})
-
-  const usuariosUnicos = Object.keys(pedidosPorUsuario).sort()
+  const ordenesFiltradas =
+    filtro === 'todos' ? ordenes : ordenes.filter((o) => o.estado === filtro)
 
   return (
-    <AdminGuard>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Gestión de Pedidos</h1>
-                <p className="text-gray-600 mt-2">Total: {pedidosFiltrados.length} pedidos</p>
-              </div>
-              <div className="space-x-4">
-                <button
-                  onClick={exportarExcel}
-                  disabled={pedidosFiltrados.length === 0}
-                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded"
-                >
-                  📥 Exportar Excel
-                </button>
-                <Link
-                  href="/admin"
-                  className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded inline-block"
-                >
-                  ← Volver
-                </Link>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold">Gestión de Pedidos</h1>
+          <button
+            onClick={loadOrdenes}
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          >
+            <FiRefreshCw size={20} />
+            Actualizar
+          </button>
         </div>
 
         {/* Filtros */}
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Filtros</h3>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Buscar por Email o Nombre
-                </label>
-                <input
-                  type="text"
-                  value={filtroUsuario}
-                  onChange={(e) => setFiltroUsuario(e.target.value)}
-                  placeholder="ej: usuario@email.com"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Estado
-                </label>
-                <select
-                  value={filtroEstado}
-                  onChange={(e) => setFiltroEstado(e.target.value as any)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                >
-                  <option value="">Todos los estados</option>
-                  <option value="pendiente">Pendiente</option>
-                  <option value="completado">Completado</option>
-                  <option value="cancelado">Cancelado</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha Inicio
-                </label>
-                <input
-                  type="date"
-                  value={filtroFechaInicio}
-                  onChange={(e) => setFiltroFechaInicio(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha Fin
-                </label>
-                <input
-                  type="date"
-                  value={filtroFechaFin}
-                  onChange={(e) => setFiltroFechaFin(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                />
-              </div>
-            </div>
+        <div className="bg-white rounded-lg shadow p-6 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <FiFilter size={20} />
+            <span className="font-bold">Filtrar por estado:</span>
           </div>
+          <div className="flex flex-wrap gap-2">
+            {['todos', 'pendiente', 'confirmada', 'despachada', 'entregada', 'cancelada'].map(
+              (status) => (
+                <button
+                  key={status}
+                  onClick={() => setFiltro(status)}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${
+                    filtro === status
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {status === 'todos' ? 'Todos' : statusLabels[status]}
+                </button>
+              )
+            )}
+          </div>
+          <p className="text-sm text-gray-600 mt-4">
+            Total: {ordenesFiltradas.length} pedidos
+          </p>
         </div>
 
-        {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin text-4xl mb-4">⏳</div>
-              <p className="text-gray-600">Cargando pedidos...</p>
-            </div>
-          ) : pedidosFiltrados.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg">
-              <p className="text-gray-600 text-lg">No hay pedidos que coincidan con los filtros</p>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {usuariosUnicos.map((email) => (
-                <div key={email} className="bg-white rounded-lg shadow overflow-hidden">
-                  {/* Encabezado Usuario */}
-                  <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6">
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <p className="text-sm text-green-100">Email</p>
-                        <p className="font-semibold text-lg">{email}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-green-100">Nombre</p>
-                        <p className="font-semibold text-lg">{pedidosPorUsuario[email][0]?.usuarioNombre || '-'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-green-100">Total Pedidos</p>
-                        <p className="font-semibold text-lg">{pedidosPorUsuario[email].length}</p>
-                      </div>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <p className="text-gray-600">Cargando pedidos...</p>
+          </div>
+        ) : ordenesFiltradas.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-12 text-center">
+            <p className="text-gray-600 text-lg">
+              No hay pedidos con el filtro seleccionado
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {ordenesFiltradas.map((orden) => (
+              <Link
+                key={orden.id}
+                href={`/orden-confirmada/${orden.id}`}
+                className="bg-white rounded-lg shadow hover:shadow-lg transition p-6"
+              >
+                <div className="grid md:grid-cols-5 gap-4 mb-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Orden</p>
+                    <p className="font-mono font-bold text-sm break-all">{orden.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Cliente</p>
+                    <p className="font-bold">{orden.nombre}</p>
+                    <p className="text-sm text-gray-600">{orden.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Total</p>
+                    <p className="text-xl font-bold text-green-600">
+                      ${orden.total.toLocaleString('es-CL')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Estado</p>
+                    <p
+                      className={`font-bold px-3 py-1 rounded-full text-sm w-fit ${
+                        statusColors[orden.estado]
+                      }`}
+                    >
+                      {statusLabels[orden.estado]}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Fecha</p>
+                    <p className="font-medium">
+                      {new Date(
+                        orden.createdAt?.toDate?.() || orden.createdAt
+                      ).toLocaleDateString('es-CL')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-bold text-gray-700 mb-2">Dirección:</p>
+                      <p className="text-sm">
+                        {orden.calle} {orden.numero}
+                        {orden.anexo && ` ${orden.anexo}`}, {orden.comuna}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-700 mb-2">Contacto:</p>
+                      <p className="text-sm">📞 {orden.telefono}</p>
                     </div>
                   </div>
 
-                  {/* Tabla de Pedidos */}
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-gray-100 border-b">
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                            ID Pedido
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                            Fecha
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                            Items
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                            Total
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                            Estado
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pedidosPorUsuario[email].map((pedido) => (
-                          <tr key={pedido.id} className="border-b hover:bg-gray-50">
-                            <td className="px-6 py-4 font-mono text-sm text-gray-900">{pedido.id}</td>
-                            <td className="px-6 py-4 text-gray-600 text-sm">
-                              {pedido.fechaCreacion?.toDate?.()?.toLocaleDateString('es-CL') ||
-                                'Fecha no disponible'}
-                            </td>
-                            <td className="px-6 py-4 text-gray-900">
-                              <div className="text-sm space-y-1">
-                                {pedido.items.slice(0, 2).map((item, idx) => (
-                                  <p key={idx}>
-                                    {item.nombre} <span className="text-gray-600">x{item.cantidad}</span>
-                                  </p>
-                                ))}
-                                {pedido.items.length > 2 && (
-                                  <p className="text-gray-600 text-xs">
-                                    +{pedido.items.length - 2} más
-                                  </p>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 font-semibold text-gray-900">
-                              ${pedido.total.toLocaleString()}
-                            </td>
-                            <td className="px-6 py-4">
-                              <select
-                                value={pedido.estado}
-                                onChange={(e) => cambiarEstado(pedido.id, e.target.value as any)}
-                                disabled={updatingPedido === pedido.id}
-                                className={`px-3 py-1 rounded text-xs font-medium border-0 cursor-pointer ${
-                                  pedido.estado === 'completado'
-                                    ? 'bg-green-100 text-green-800'
-                                    : pedido.estado === 'pendiente'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
-                                }`}
-                              >
-                                <option value="pendiente">Pendiente</option>
-                                <option value="completado">Completado</option>
-                                <option value="cancelado">Cancelado</option>
-                              </select>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                  <div className="mt-4">
+                    <p className="text-sm font-bold text-gray-700 mb-2">
+                      Productos ({orden.items.length}):
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {orden.items.map((item, idx) => (
+                        <span
+                          key={idx}
+                          className="bg-gray-100 px-2 py-1 rounded text-xs"
+                        >
+                          {item.nombre} x{item.cantidad}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
-    </AdminGuard>
+    </div>
   )
 }

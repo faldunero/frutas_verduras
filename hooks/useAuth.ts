@@ -13,7 +13,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore'
 export function useAuth() {
   const [user, setUser] = useState<FirebaseUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const [rol, setRol] = useState<'client' | 'admin' | null>(null)
+  const [rol, setRol] = useState<'user' | 'admin' | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -37,9 +37,9 @@ export function useAuth() {
       const userDoc = await getDoc(doc(db, 'users', userId))
       if (userDoc.exists()) {
         const userData = userDoc.data()
-        setRol(userData.rol || 'client')
+        setRol(userData.rol || 'user')
       } else {
-        setRol('client')
+        setRol('user')
       }
     } catch (error) {
       console.error('Error fetching user rol:', error)
@@ -72,7 +72,7 @@ export function useAuth() {
         await setDoc(doc(db, 'users', result.user.uid), {
           email,
           nombre,
-          rol: 'client',
+          rol: 'user',
           direccion: '',
           telefono: '',
           createdAt: new Date(),

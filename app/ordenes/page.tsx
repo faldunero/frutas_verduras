@@ -1,76 +1,119 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { db } from '@/lib/firebase'
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore'
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore'
+import Link from 'next/link'
+import { FiPackage, FiArrowLeft } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 
-interface PedidoItem {
+interface Orden {
   id: string
   nombre: string
-  precio: number
-  cantidad: number
+  email: string
+  telefono: string
+  calle: string
+  numero: string
+  anexo: string
+  comuna: string
+  metodoPago: string
+  estado: string
+  subtotal: number
+  impuestos: number
+  envio: number
+  total: number
+  items: Array<{
+    productoId: string
+    nombre: string
+    cantidad: number
+    precioUnitario: number
+    subtotal: number
+  }>
+  createdAt: any
 }
 
-interface Pedido {
-  id: string
-  usuarioId: string
-  usuarioEmail: string
-  usuarioNombre: string
-  items: PedidoItem[]
-  total: number
-  estado: 'pendiente' | 'completado' | 'cancelado'
-  fechaCreacion: any
-  direccion?: string
-  telefono?: string
+const statusColors: { [key: string]: string } = {
+  pendiente: 'bg-yellow-100 text-yellow-800',
+  confirmada: 'bg-blue-100 text-blue-800',
+  despachada: 'bg-purple-100 text-purple-800',
+  entregada: 'bg-green-100 text-green-800',
+  cancelada: 'bg-red-100 text-red-800',
+}
+
+const statusLabels: { [key: string]: string } = {
+  pendiente: 'Pendiente de Pago',
+  confirmada: 'Confirmada',
+  despachada: 'Despachada',
+  entregada: 'Entregada',
+  cancelada: 'Cancelada',
 }
 
 export default function OrdenesPage() {
-  const router = useRouter()
-  const { user, isAuthenticated, loading: authLoading } = useAuth()
-  const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const { user, isAuthenticated } = useAuth()
+  const [ordenes, setOrdenes] = useState<Orden[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!authLoading) {
-      if (!isAuthenticated) {
-        router.push('/auth/login')
-      } else if (user) {
-        fetchPedidos()
+    const loadOrdenes = async () => {
+      if (!isAuthenticated || !user?.uid) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const q = query(
+          collection(db, 'ordenes'),
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc')
+        )
+        const snapshot = await getDocs(q)
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Orden[]
+        setOrdenes(data)
+      } catch (error) {
+        console.error('Error loading ordenes:', error)
+        toast.error('Error al cargar tus órdenes')
+      } finally {
+        setLoading(false)
       }
     }
-  }, [isAuthenticated, user, authLoading, router])
 
-  const fetchPedidos = async () => {
-    try {
-      const q = query(
-        collection(db, 'pedidos'),
-        where('usuarioId', '==', user?.uid),
-        orderBy('fechaCreacion', 'desc')
-      )
-      const querySnapshot = await getDocs(q)
-      const data = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Pedido[]
-      setPedidos(data)
-    } catch (error) {
-      console.error('Error fetching pedidos:', error)
-      toast.error('Error al cargar tus pedidos')
-    } finally {
-      setLoading(false)
-    }
+    loadOrdenes()
+  }, [user?.uid, isAuthenticated])
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <div className="text-6xl mb-4">🔐</div>
+            <h1 className="text-2xl font-bold mb-2">Inicia sesión para continuar</h1>
+            <p className="text-gray-600 mb-8">
+              Necesitas tener una cuenta para ver tus órdenes
+            </p>
+            <Link
+              href="/auth/login"
+              className="inline-block bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700"
+            >
+              Ir a Login
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
   }
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">⏳</div>
-          <p className="text-gray-600">Cargando tus pedidos...</p>
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center">
+            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <p className="text-gray-600">Cargando tus órdenes...</p>
+          </div>
         </div>
       </div>
     )
@@ -78,100 +121,93 @@ export default function OrdenesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Mis Pedidos</h1>
-          <p className="text-gray-600">Historial de todas tus compras</p>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-4 mb-8">
+          <Link href="/" className="text-green-600 hover:text-green-700">
+            <FiArrowLeft size={24} />
+          </Link>
+          <h1 className="text-4xl font-bold">Mis Órdenes</h1>
         </div>
 
-        {pedidos.length === 0 ? (
+        {ordenes.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
-            <div className="text-5xl mb-4">📦</div>
-            <p className="text-gray-600 text-lg mb-6">No tienes pedidos aún</p>
+            <FiPackage className="text-6xl text-gray-300 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-4 text-gray-700">No tienes órdenes</h2>
+            <p className="text-gray-600 mb-8">
+              Aún no has realizado ninguna compra. ¡Comienza a comprar!
+            </p>
             <Link
               href="/catalogo"
-              className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg"
+              className="inline-block bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-bold"
             >
-              Explorar Catálogo
+              Ver Catálogo
             </Link>
           </div>
         ) : (
           <div className="space-y-4">
-            {pedidos.map((pedido) => (
-              <div
-                key={pedido.id}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition p-6"
+            {ordenes.map((orden) => (
+              <Link
+                key={orden.id}
+                href={`/orden-confirmada/${orden.id}`}
+                className="block bg-white rounded-lg shadow hover:shadow-lg transition p-6"
               >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Orden</p>
+                    <p className="font-mono text-lg font-bold text-gray-900 break-all">
+                      {orden.id}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-green-600">
+                      ${orden.total.toLocaleString('es-CL')}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="grid md:grid-cols-4 gap-4 mb-4">
                   <div>
-                    <p className="text-sm text-gray-600 font-medium">Fecha del Pedido</p>
-                    <p className="text-lg font-semibold text-gray-900">
-                      {pedido.fechaCreacion?.toDate?.()?.toLocaleDateString('es-CL') ||
-                        'Fecha no disponible'}
+                    <p className="text-sm text-gray-600">Fecha</p>
+                    <p className="font-medium">
+                      {new Date(orden.createdAt?.toDate?.() || orden.createdAt).toLocaleDateString(
+                        'es-CL'
+                      )}
                     </p>
                   </div>
-
                   <div>
-                    <p className="text-sm text-gray-600 font-medium">ID Pedido</p>
-                    <p className="text-lg font-mono text-gray-900 truncate">{pedido.id}</p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-600 font-medium">Total</p>
-                    <p className="text-lg font-semibold text-green-600">
-                      ${pedido.total.toLocaleString()}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-600 font-medium">Estado</p>
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-1 ${
-                        pedido.estado === 'completado'
-                          ? 'bg-green-100 text-green-800'
-                          : pedido.estado === 'pendiente'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
+                    <p className="text-sm text-gray-600">Estado</p>
+                    <p
+                      className={`font-medium px-3 py-1 rounded-full text-sm w-fit ${
+                        statusColors[orden.estado] || statusColors['pendiente']
                       }`}
                     >
-                      {pedido.estado.charAt(0).toUpperCase() + pedido.estado.slice(1)}
-                    </span>
+                      {statusLabels[orden.estado] || orden.estado}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Productos</p>
+                    <p className="font-medium">{orden.items.length} artículos</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Entrega</p>
+                    <p className="font-medium">{orden.comuna}</p>
                   </div>
                 </div>
 
                 <div className="border-t pt-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Productos:</p>
-                  <div className="space-y-2">
-                    {pedido.items.map((item, idx) => (
-                      <div key={idx} className="flex justify-between text-gray-700 text-sm">
-                        <span>
-                          {item.nombre} <span className="text-gray-600">x{item.cantidad}</span>
-                        </span>
-                        <span>${(item.precio * item.cantidad).toLocaleString()}</span>
-                      </div>
+                  <p className="text-sm text-gray-600 mb-2">Productos:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {orden.items.map((item, idx) => (
+                      <span key={idx} className="bg-gray-100 px-2 py-1 rounded text-sm">
+                        {item.nombre} x{item.cantidad}
+                      </span>
                     ))}
                   </div>
                 </div>
-
-                {pedido.direccion && (
-                  <div className="border-t mt-4 pt-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Entrega:</p>
-                    <div className="text-sm text-gray-700">
-                      <p>📍 {pedido.direccion}</p>
-                      {pedido.telefono && <p>📱 {pedido.telefono}</p>}
-                    </div>
-                  </div>
-                )}
-              </div>
+              </Link>
             ))}
           </div>
         )}
-
-        <div className="mt-12 text-center">
-          <Link href="/" className="text-green-600 hover:text-green-700 font-medium">
-            ← Volver a Inicio
-          </Link>
-        </div>
       </div>
     </div>
   )

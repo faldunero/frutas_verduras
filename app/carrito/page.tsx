@@ -2,6 +2,7 @@
 
 import { useCart } from '@/hooks/useCart'
 import { useAuth } from '@/hooks/useAuth'
+import { useCartExpiration } from '@/hooks/useCartExpiration'
 import Link from 'next/link'
 import { FiTrash2, FiPlus, FiMinus } from 'react-icons/fi'
 import { useRouter } from 'next/navigation'
@@ -11,6 +12,9 @@ export default function CarritoPage() {
   const { items, removeItem, updateQuantity, clearCart, getSubtotal } = useCart()
   const { isAuthenticated } = useAuth()
   const router = useRouter()
+
+  // Monitorear expiración del carrito (10 minutos)
+  useCartExpiration()
 
   const subtotal = getSubtotal()
 

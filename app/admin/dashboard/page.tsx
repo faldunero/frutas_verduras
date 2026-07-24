@@ -34,13 +34,23 @@ interface Orden {
   createdAt: any
 }
 
+interface AnalisisHistorico {
+  id: string
+  productoId: string
+  nombre: string
+  precioAnterior: number
+  precioSugerido: number
+  timestamp: any
+}
+
 export default function DashboardPage() {
   const { isAdmin, isAuthenticated } = useAuth()
   const [ordenes, setOrdenes] = useState<Orden[]>([])
+  const [analisisHistorico, setAnalisisHistorico] = useState<AnalisisHistorico[]>([])
   const [loading, setLoading] = useState(true)
   const [periodo, setPeriodo] = useState<'diario' | 'semanal' | 'mensual'>('diario')
 
-  const loadOrdenes = async () => {
+  const loadDatos = async () => {
     try {
       setLoading(true)
       const q = query(collection(db, 'ordenes'))
@@ -50,8 +60,17 @@ export default function DashboardPage() {
         ...doc.data(),
       })) as Orden[]
       setOrdenes(data)
+
+      // Cargar análisis histórico
+      const qAnalisis = query(collection(db, 'analisisHistorico'))
+      const snapshotAnalisis = await getDocs(qAnalisis)
+      const dataAnalisis = snapshotAnalisis.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as AnalisisHistorico[]
+      setAnalisisHistorico(dataAnalisis)
     } catch (error) {
-      console.error('Error loading ordenes:', error)
+      console.error('Error loading data:', error)
       toast.error('Error al cargar datos')
     } finally {
       setLoading(false)
@@ -60,7 +79,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (isAdmin) {
-      loadOrdenes()
+      loadDatos()
     }
   }, [isAdmin])
 
@@ -138,6 +157,83 @@ export default function DashboardPage() {
         value: Math.round(value),
       }))
       .sort((a, b) => b.value - a.value)
+  }
+
+  // Productos más vendidos
+  const calcularProductosMasVendidos = () => {
+    const datos: { [key: string]: { nombre: string; cantidad: number; total: number } } = {}
+
+    ordenes.forEach((orden) => {
+      orden.items?.forEach((item: any) => {
+        if (!datos[item.productoId]) {
+          datos[item.productoId] = { nombre: item.nombre, cantidad: 0, total: 0 }
+        }
+        datos[item.productoId].cantidad += item.cantidad
+        datos[item.productoId].total += item.subtotal
+      })
+    })
+
+    return Object.values(datos)
+      .sort((a, b) => b.cantidad - a.cantidad)
+      .slice(0, 8)
+  }
+
+  // Variación de precios
+  const calcularVariacionPrecios = () => {
+    const datos: { [key: string]: { nombre: string; precios: number[] } } = {}
+
+    analisisHistorico.forEach((analisis) => {
+      if (!datos[analisis.productoId]) {
+        datos[analisis.productoId] = { nombre: analisis.nombre, precios: [] }
+      }
+      datos[analisis.productoId].precios.push(analisis.precioSugerido)
+    })
+
+    return Object.entries(datos)
+      .map(([_, data]) => {
+        const precioMin = Math.min(...data.precios)
+        const precioMax = Math.max(...data.precios)
+        const variacion = precioMax - precioMin
+        const porcentajeVariacion = (variacion / precioMin) * 100
+        return {
+          nombre: data.nombre,
+          minimo: precioMin,
+          maximo: precioMax,
+          variacion: Math.round(variacion),
+          porcentaje: porcentajeVariacion.toFixed(1),
+        }
+      })
+      .filter((p) => p.variacion > 0)
+      .sort((a, b) => b.variacion - a.variacion)
+      .slice(0, 8)
+  }
+
+  // Comparativa períodos
+  const calcularComparativaPeriodos = () => {
+    const hoy = new Date()
+    const hace30Dias = new Date(hoy.getTime() - 30 * 24 * 60 * 60 * 1000)
+    const hace60Dias = new Date(hoy.getTime() - 60 * 24 * 60 * 60 * 1000)
+
+    const ventasUltimos30 = ordenes
+      .filter((o) => new Date(o.createdAt?.toDate?.() || o.createdAt) >= hace30Dias)
+      .reduce((sum, o) => sum + o.total, 0)
+
+    const ventasAntes30Dias = ordenes
+      .filter((o) => {
+        const fecha = new Date(o.createdAt?.toDate?.() || o.createdAt)
+        return fecha >= hace60Dias && fecha < hace30Dias
+      })
+      .reduce((sum, o) => sum + o.total, 0)
+
+    const variacion = ventasUltimos30 - ventasAntes30Dias
+    const porcentaje = ventasAntes30Dias > 0 ? (variacion / ventasAntes30Dias) * 100 : 0
+
+    return {
+      actual: ventasUltimos30,
+      anterior: ventasAntes30Dias,
+      variacion,
+      porcentaje: porcentaje.toFixed(1),
+    }
   }
 
   const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16']
@@ -328,6 +424,93 @@ export default function DashboardPage() {
                       <td className="px-4 py-2 font-bold text-green-600">
                         ${usuario.total.toLocaleString('es-CL')}
                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Comparativa períodos */}
+        <div className="grid md:grid-cols-3 gap-4 mt-6 mb-6">
+          {(() => {
+            const comparativa = calcularComparativaPeriodos()
+            return (
+              <>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-sm text-gray-600 mb-2">Últimos 30 días</h3>
+                  <p className="text-2xl font-bold text-gray-900">
+                    ${comparativa.actual.toLocaleString('es-CL')}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-sm text-gray-600 mb-2">30 días anteriores</h3>
+                  <p className="text-2xl font-bold text-gray-900">
+                    ${comparativa.anterior.toLocaleString('es-CL')}
+                  </p>
+                </div>
+                <div className={`bg-white rounded-lg shadow p-6 ${comparativa.variacion >= 0 ? 'border-l-4 border-green-600' : 'border-l-4 border-red-600'}`}>
+                  <h3 className="text-sm text-gray-600 mb-2">Variación</h3>
+                  <p className={`text-2xl font-bold ${comparativa.variacion >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {comparativa.variacion >= 0 ? '+' : ''}{comparativa.porcentaje}%
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    ${comparativa.variacion.toLocaleString('es-CL')}
+                  </p>
+                </div>
+              </>
+            )
+          })()}
+        </div>
+
+        {/* Productos más vendidos */}
+        <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Productos Más Vendidos</h2>
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">Cargando...</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={calcularProductosMasVendidos()}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="nombre" angle={-45} textAnchor="end" height={80} />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="cantidad" fill="#10b981" name="Cantidad" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+
+        {/* Variación de precios */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Variación de Precios por Producto</h2>
+          {loading ? (
+            <div className="text-center py-8 text-gray-500">Cargando...</div>
+          ) : calcularVariacionPrecios().length === 0 ? (
+            <div className="text-center py-8 text-gray-500">No hay datos de variación disponibles</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Producto</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Mínimo</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Máximo</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Variación $</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-700">Variación %</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {calcularVariacionPrecios().map((producto, idx) => (
+                    <tr key={idx} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-gray-900 font-medium">{producto.nombre}</td>
+                      <td className="px-4 py-2 text-gray-600">${producto.minimo.toLocaleString('es-CL')}</td>
+                      <td className="px-4 py-2 text-gray-600">${producto.maximo.toLocaleString('es-CL')}</td>
+                      <td className="px-4 py-2 font-bold text-blue-600">
+                        ${producto.variacion.toLocaleString('es-CL')}
+                      </td>
+                      <td className="px-4 py-2 font-bold text-orange-600">{producto.porcentaje}%</td>
                     </tr>
                   ))}
                 </tbody>

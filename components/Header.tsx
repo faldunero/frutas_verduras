@@ -90,12 +90,14 @@ export function Header() {
                     >
                       Mi Perfil
                     </Link>
-                    <Link
-                      href="/ordenes"
-                      className="block px-4 py-2 hover:bg-gray-100"
-                    >
-                      Mis Órdenes
-                    </Link>
+                    {!isAdmin && (
+                      <Link
+                        href="/ordenes"
+                        className="block px-4 py-2 hover:bg-gray-100"
+                      >
+                        Mis Órdenes
+                      </Link>
+                    )}
                     <button
                       onClick={handleLogout}
                       className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-b-lg flex items-center gap-2 text-red-600"

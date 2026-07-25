@@ -49,7 +49,6 @@ export default function AnalizadorPage() {
           updatedAt: doc.data().updatedAt,
         })
       })
-      productos.sort((a, b) => a.nombre.localeCompare(b.nombre))
       setProductos(productos)
     } catch (error) {
       console.error('Error loading productos:', error)

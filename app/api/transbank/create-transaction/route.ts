@@ -27,10 +27,10 @@ export async function POST(request: NextRequest) {
 
     // Crear transacción
     const response = await tx.create(
-      ordenId.toString(), // sessionId
-      email, // email
+      ordenId.toString(), // buy_order
+      ordenId.toString(), // session_id
       Math.round(monto), // amount en pesos
-      returnUrl // returnUrl
+      returnUrl // return_url
     )
 
     return NextResponse.json({

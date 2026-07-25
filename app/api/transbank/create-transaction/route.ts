@@ -38,10 +38,18 @@ export async function POST(request: NextRequest) {
       url: response.url,
       ordenId,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error en Transbank create:', error)
+    console.error('Error details:', {
+      message: error?.message,
+      stack: error?.stack,
+      code: error?.code,
+    })
     return NextResponse.json(
-      { error: 'Error al crear transacción con Transbank' },
+      {
+        error: 'Error al crear transacción con Transbank',
+        details: error?.message || 'Unknown error'
+      },
       { status: 500 }
     )
   }

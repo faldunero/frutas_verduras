@@ -20,6 +20,7 @@ interface Usuario {
   anexo?: string
   comuna?: string
   rol: 'user' | 'admin'
+  bloqueado?: boolean
   createdAt?: any
 }
 
@@ -66,13 +67,33 @@ export default function UsuariosPage() {
     }
   }
 
+  const handleToggleBloqueado = async (id: string, bloqueado: boolean) => {
+    const accion = bloqueado ? 'desbloquear' : 'bloquear'
+    if (!confirm(`¿Estás seguro de ${accion} este usuario?`)) return
+
+    try {
+      await updateDoc(doc(db, 'users', id), {
+        bloqueado: !bloqueado,
+      })
+      setUsuarios(
+        usuarios.map((u) =>
+          u.id === id ? { ...u, bloqueado: !bloqueado } : u
+        )
+      )
+      toast.success(`Usuario ${accion}do`)
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error(`Error al ${accion} usuario`)
+    }
+  }
+
   const handleDelete = async (id: string, email: string) => {
-    if (!confirm(`¿Estás seguro de eliminar a ${email}?`)) return
+    if (!confirm(`¿Estás seguro de ELIMINAR PERMANENTEMENTE a ${email}? Esta acción no se puede deshacer.`)) return
 
     try {
       await deleteDoc(doc(db, 'users', id))
       setUsuarios(usuarios.filter((u) => u.id !== id))
-      toast.success('Usuario eliminado')
+      toast.success('Usuario eliminado permanentemente')
     } catch (error) {
       console.error('Error:', error)
       toast.error('Error al eliminar usuario')
@@ -475,6 +496,9 @@ export default function UsuariosPage() {
                         Rol
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                        Estado
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                         Registro
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
@@ -513,6 +537,17 @@ export default function UsuariosPage() {
                             {usuario.rol === 'admin' ? 'Admin' : 'Cliente'}
                           </span>
                         </td>
+                        <td className="px-6 py-4 text-sm">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                              usuario.bloqueado
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-green-100 text-green-800'
+                            }`}
+                          >
+                            {usuario.bloqueado ? '🔒 Bloqueado' : '✓ Activo'}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 text-gray-600 text-xs">
                           {usuario.createdAt ? (
                             new Date(usuario.createdAt?.toDate?.() || usuario.createdAt).toLocaleDateString('es-CL')
@@ -528,11 +563,23 @@ export default function UsuariosPage() {
                             <FiEdit2 size={16} /> Editar
                           </button>
                           <button
-                            onClick={() => handleDelete(usuario.id, usuario.email)}
-                            className="text-red-600 hover:text-red-800 font-medium inline-flex items-center gap-1"
+                            onClick={() => handleToggleBloqueado(usuario.id, usuario.bloqueado || false)}
+                            className={`font-medium inline-flex items-center gap-1 ${
+                              usuario.bloqueado
+                                ? 'text-green-600 hover:text-green-800'
+                                : 'text-yellow-600 hover:text-yellow-800'
+                            }`}
                           >
-                            <FiTrash2 size={16} /> Eliminar
+                            {usuario.bloqueado ? '🔓 Desbloquear' : '🔒 Bloquear'}
                           </button>
+                          {usuario.bloqueado && (
+                            <button
+                              onClick={() => handleDelete(usuario.id, usuario.email)}
+                              className="text-red-600 hover:text-red-800 font-medium inline-flex items-center gap-1"
+                            >
+                              <FiTrash2 size={16} /> Eliminar
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}

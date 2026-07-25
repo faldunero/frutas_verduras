@@ -56,6 +56,8 @@ export default function PedidosPage() {
   const [filtro, setFiltro] = useState<string>('todos')
   const [fechaDesde, setFechaDesde] = useState<string>('')
   const [fechaHasta, setFechaHasta] = useState<string>('')
+  const [busquedaUsuario, setBusquedaUsuario] = useState<string>('')
+  const [busquedaOrden, setBusquedaOrden] = useState<string>('')
 
   const loadOrdenes = async () => {
     try {
@@ -105,6 +107,17 @@ export default function PedidosPage() {
 
   const ordenesFiltradas = ordenes
     .filter((o) => (filtro === 'todos' ? true : o.estado === filtro))
+    .filter((o) => {
+      if (!busquedaUsuario) return true
+      return (
+        o.nombre.toLowerCase().includes(busquedaUsuario.toLowerCase()) ||
+        o.email.toLowerCase().includes(busquedaUsuario.toLowerCase())
+      )
+    })
+    .filter((o) => {
+      if (!busquedaOrden) return true
+      return o.id.toLowerCase().includes(busquedaOrden.toLowerCase())
+    })
     .filter((o) => {
       if (!fechaDesde && !fechaHasta) return true
       const fechaOrden = new Date(o.createdAt?.toDate?.() || o.createdAt)
@@ -162,6 +175,44 @@ export default function PedidosPage() {
                 )
               )}
             </div>
+          </div>
+
+          {/* Búsqueda */}
+          <div className="mb-6">
+            <h3 className="text-sm font-bold text-gray-700 mb-3">Búsqueda:</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-gray-600">Usuario (nombre o email):</label>
+                <input
+                  type="text"
+                  placeholder="Buscar usuario..."
+                  value={busquedaUsuario}
+                  onChange={(e) => setBusquedaUsuario(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-600">Número de orden:</label>
+                <input
+                  type="text"
+                  placeholder="Buscar orden..."
+                  value={busquedaOrden}
+                  onChange={(e) => setBusquedaOrden(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                />
+              </div>
+            </div>
+            {(busquedaUsuario || busquedaOrden) && (
+              <button
+                onClick={() => {
+                  setBusquedaUsuario('')
+                  setBusquedaOrden('')
+                }}
+                className="mt-2 text-sm text-gray-500 hover:text-gray-700 underline"
+              >
+                Limpiar búsqueda
+              </button>
+            )}
           </div>
 
           {/* Filtro por Fecha */}

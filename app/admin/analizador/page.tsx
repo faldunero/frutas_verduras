@@ -40,30 +40,14 @@ export default function AnalizadorPage() {
         .map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }))
-        .sort((a, b) => a.nombre.localeCompare(b.nombre)) as Producto[]
+        }) as Producto)
+        .sort((a, b) => a.nombre.localeCompare(b.nombre))
       setProductos(data)
     } catch (error) {
       console.error('Error loading productos:', error)
       toast.error('Error al cargar productos')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const updateProducto = async (productoId: string, updates: any) => {
-    try {
-      setSaving(true)
-      await updateDoc(doc(db, 'productos', productoId), updates)
-      setProductos((prev) =>
-        prev.map((p) => (p.id === productoId ? { ...p, ...updates } : p))
-      )
-      toast.success('Producto actualizado')
-    } catch (error) {
-      console.error('Error updating producto:', error)
-      toast.error('Error al actualizar producto')
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -272,7 +256,7 @@ export default function AnalizadorPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {productosFiltrados.map((producto, idx) => {
+                {productosFiltrados.map((producto) => {
                     const promedioCompetencia = calcularPromedioCompetencia(producto)
                     const precioSugerido = calcularPrecioSugerido(producto)
                     const esCompetitivo =

@@ -15,7 +15,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   PieChart,
   Pie,
@@ -359,7 +358,7 @@ export default function DashboardPage() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="periodo" />
                   <YAxis />
-                  <Tooltip formatter={(value) => `$${value.toLocaleString('es-CL')}`} />
+                  <Tooltip formatter={(value) => value ? `$${Number(value).toLocaleString('es-CL')}` : '-'} />
                   <Line
                     type="monotone"
                     dataKey="total"
@@ -390,11 +389,11 @@ export default function DashboardPage() {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {ventasPorComuna.map((entry, index) => (
+                    {ventasPorComuna.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => `$${value.toLocaleString('es-CL')}`} />
+                  <Tooltip formatter={(value) => value ? `$${Number(value).toLocaleString('es-CL')}` : '-'} />
                 </PieChart>
               </ResponsiveContainer>
             )}

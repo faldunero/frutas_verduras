@@ -6,7 +6,7 @@ import { AdminGuard } from '@/components/AdminGuard'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore'
 import toast from 'react-hot-toast'
-import { FiTrash2, FiEdit2, FiPlus } from 'react-icons/fi'
+import { FiTrash2, FiEdit2 } from 'react-icons/fi'
 
 interface Descuento {
   id: string

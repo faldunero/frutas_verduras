@@ -27,6 +27,14 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
     const returnUrl = `${baseUrl}/api/transbank/commit-transaction`
 
+    console.log('DEBUG Transbank:', {
+      NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+      baseUrl,
+      returnUrl,
+      TRANSBANK_COMMERCE_CODE: process.env.TRANSBANK_COMMERCE_CODE,
+      TRANSBANK_ENVIRONMENT: process.env.TRANSBANK_ENVIRONMENT,
+    })
+
     // Crear transacción
     const response = await tx.create(
       ordenId.toString(), // buy_order

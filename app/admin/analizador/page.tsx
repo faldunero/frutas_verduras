@@ -36,12 +36,21 @@ export default function AnalizadorPage() {
   const loadProductos = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'productos'))
-      const docs = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Producto[]
-      const data = docs.sort((a, b) => a.nombre.localeCompare(b.nombre))
-      setProductos(data)
+      const productos: Producto[] = []
+      snapshot.docs.forEach((doc) => {
+        productos.push({
+          id: doc.id,
+          nombre: doc.data().nombre,
+          precio: doc.data().precio,
+          costo: doc.data().costo,
+          competencia: doc.data().competencia,
+          categoria: doc.data().categoria,
+          unidadVenta: doc.data().unidadVenta,
+          updatedAt: doc.data().updatedAt,
+        })
+      })
+      productos.sort((a, b) => a.nombre.localeCompare(b.nombre))
+      setProductos(productos)
     } catch (error) {
       console.error('Error loading productos:', error)
       toast.error('Error al cargar productos')

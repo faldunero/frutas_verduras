@@ -23,7 +23,7 @@ export default function CheckoutPage() {
     numero: '',
     anexo: '',
     comuna: '',
-    metodoPago: 'transbank',
+    metodoPago: 'transfer',
     comentarios: '',
   })
 
@@ -380,18 +380,17 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-bold mb-4">Método de Pago</h2>
 
                 <div className="space-y-3">
-                  <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <label className="flex items-center p-3 border border-gray-200 rounded-lg bg-gray-100 cursor-not-allowed opacity-60">
                     <input
                       type="radio"
                       name="metodoPago"
                       value="transbank"
-                      checked={formData.metodoPago === 'transbank'}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-green-600"
+                      disabled
+                      className="w-4 h-4 text-gray-400"
                     />
                     <span className="ml-3">
-                      <div className="font-medium text-gray-900">💳 Tarjeta de Crédito/Débito (Transbank)</div>
-                      <div className="text-xs text-gray-500">Pago inmediato y seguro</div>
+                      <div className="font-medium text-gray-600">💳 Tarjeta de Crédito/Débito (Transbank)</div>
+                      <div className="text-xs text-gray-500">⚠️ En mantenimiento - Disponible pronto</div>
                     </span>
                   </label>
 

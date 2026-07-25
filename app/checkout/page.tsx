@@ -23,7 +23,7 @@ export default function CheckoutPage() {
     numero: '',
     anexo: '',
     comuna: '',
-    metodoPago: 'transfer',
+    metodoPago: 'transbank',
     comentarios: '',
   })
 
@@ -148,7 +148,7 @@ export default function CheckoutPage() {
       // Crear la orden en Firestore
       const ordenData = {
         userId: user?.uid,
-        email: user?.email,
+        email: formData.email,
         nombre: formData.nombre,
         telefono: formData.telefono,
         calle: formData.calle,
@@ -156,7 +156,7 @@ export default function CheckoutPage() {
         anexo: formData.anexo,
         comuna: formData.comuna,
         metodoPago: formData.metodoPago,
-        estado: 'pendiente',
+        estado: formData.metodoPago === 'transbank' ? 'pendiente' : 'confirmada',
         subtotal,
         impuestos,
         envio,
@@ -190,13 +190,37 @@ export default function CheckoutPage() {
       // Limpiar carrito
       clearCart()
 
-      // Ir a página de confirmación
-      router.push(`/orden-confirmada/${docRef.id}`)
-      toast.success('Orden creada exitosamente')
+      // Si es Transbank, redirigir al pago
+      if (formData.metodoPago === 'transbank') {
+        toast.loading('Redirigiendo a Transbank...')
+
+        // Crear transacción en Transbank
+        const response = await fetch('/api/transbank/create-transaction', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ordenId: docRef.id,
+            monto: total,
+            email: formData.email,
+          }),
+        })
+
+        const data = await response.json()
+
+        if (data.url) {
+          // Redirigir a Transbank
+          window.location.href = data.url
+        } else {
+          throw new Error('Error al iniciar transacción con Transbank')
+        }
+      } else {
+        // Si es transferencia, redirigir a confirmación
+        router.push(`/orden-confirmada/${docRef.id}`)
+        toast.success('Orden creada - Pendiente de pago por transferencia')
+      }
     } catch (error) {
       console.error('Error creating orden:', error)
       toast.error('Error al crear la orden')
-    } finally {
       setLoading(false)
     }
   }
@@ -337,7 +361,22 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-bold mb-4">Método de Pago</h2>
 
                 <div className="space-y-3">
-                  <label className="flex items-center">
+                  <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="metodoPago"
+                      value="transbank"
+                      checked={formData.metodoPago === 'transbank'}
+                      onChange={handleChange}
+                      className="w-4 h-4 text-green-600"
+                    />
+                    <span className="ml-3">
+                      <div className="font-medium text-gray-900">💳 Tarjeta de Crédito/Débito (Transbank)</div>
+                      <div className="text-xs text-gray-500">Pago inmediato y seguro</div>
+                    </span>
+                  </label>
+
+                  <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                     <input
                       type="radio"
                       name="metodoPago"
@@ -346,13 +385,12 @@ export default function CheckoutPage() {
                       onChange={handleChange}
                       className="w-4 h-4 text-green-600"
                     />
-                    <span className="ml-3 text-gray-700">Transferencia Bancaria</span>
+                    <span className="ml-3">
+                      <div className="font-medium text-gray-900">🏦 Transferencia Bancaria</div>
+                      <div className="text-xs text-gray-500">Deberás confirmar el pago manualmente</div>
+                    </span>
                   </label>
                 </div>
-
-                <p className="text-xs text-gray-500 mt-3">
-                  Por ahora solo aceptamos transferencias bancarias.
-                </p>
               </div>
 
               {/* Comentarios */}

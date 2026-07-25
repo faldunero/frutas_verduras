@@ -24,7 +24,6 @@ interface Producto {
 export default function ProductosPage() {
   const [productos, setProductos] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
-  const [cargando, setCargando] = useState(false)
   const [busqueda, setBusqueda] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('')
   const [filtroDisponible, setFiltroDisponible] = useState<string>('')

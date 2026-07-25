@@ -1,11 +1,16 @@
+'use client'
+
 import Link from 'next/link'
 import { ProductosDestacados } from '@/components/ProductosDestacados'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function Home() {
+  const { isAuthenticated } = useAuth()
+
   return (
     <div className="space-y-12">
-      {/* Hero Section */}
-      <section
+      {/* Hero Section - Solo si NO está logeado */}
+      {!isAuthenticated && <section
         className="text-white py-32 relative overflow-hidden"
         style={{
           backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.45) 100%), url("https://images.pexels.com/photos/7543130/pexels-photo-7543130.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop")',
@@ -30,9 +35,10 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </section>
+      </section>}
 
-      {/* Features Section */}
+      {/* Features Section - Solo si NO está logeado */}
+      {!isAuthenticated &&
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h2 className="text-4xl font-bold text-center mb-12">
           ¿Por qué elegirnos?
@@ -64,7 +70,7 @@ export default function Home() {
             </p>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* Productos Destacados */}
       <ProductosDestacados />
@@ -91,7 +97,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* FAQs Preview */}
       <section id="faqs" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -145,6 +145,27 @@ export default function CheckoutPage() {
     setLoading(true)
 
     try {
+      // Verificar stock disponible ANTES de crear la orden
+      for (const item of items) {
+        try {
+          const productoRef = doc(db, 'productos', item.id)
+          const productoDoc = await getDoc(productoRef)
+
+          if (!productoDoc.exists()) {
+            throw new Error(`Producto ${item.nombre} no encontrado`)
+          }
+
+          const stockDisponible = productoDoc.data().stock || 0
+          if (stockDisponible < item.cantidad) {
+            throw new Error(
+              `Stock insuficiente para ${item.nombre}. Disponible: ${stockDisponible}, Solicitado: ${item.cantidad}`
+            )
+          }
+        } catch (error: any) {
+          throw new Error(error.message || `Error verificando stock de ${item.nombre}`)
+        }
+      }
+
       // Crear la orden en Firestore
       const ordenData = {
         userId: user?.uid,

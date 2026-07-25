@@ -36,12 +36,11 @@ export default function AnalizadorPage() {
   const loadProductos = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'productos'))
-      const data = (snapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Producto[])
-        .sort((a, b) => a.nombre.localeCompare(b.nombre))
+      const docs = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Producto[]
+      const data = docs.sort((a, b) => a.nombre.localeCompare(b.nombre))
       setProductos(data)
     } catch (error) {
       console.error('Error loading productos:', error)

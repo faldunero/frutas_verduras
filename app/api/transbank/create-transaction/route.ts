@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-const WebpayPlus = require('transbank-sdk').WebpayPlus
+let WebpayPlus: any
+try {
+  WebpayPlus = require('transbank-sdk').WebpayPlus
+  console.log('WebpayPlus loaded successfully')
+} catch (e) {
+  console.error('Failed to load WebpayPlus:', e)
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,13 +41,22 @@ export async function POST(request: NextRequest) {
       TRANSBANK_ENVIRONMENT: process.env.TRANSBANK_ENVIRONMENT,
     })
 
-    // Crear transacción
+    // Crear transacción con propiedades nombradas
+    console.log('Calling tx.create with params:', {
+      buy_order: ordenId.toString(),
+      session_id: ordenId.toString(),
+      amount: Math.round(monto),
+      return_url: returnUrl,
+    })
+
     const response = await tx.create(
-      ordenId.toString(), // buy_order
-      ordenId.toString(), // session_id
-      Math.round(monto), // amount en pesos
-      returnUrl // return_url
+      ordenId.toString(),
+      ordenId.toString(),
+      Math.round(monto),
+      returnUrl
     )
+
+    console.log('tx.create response:', response)
 
     return NextResponse.json({
       token: response.token,

@@ -40,8 +40,8 @@ export default function AnalizadorPage() {
         .map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }) as Producto)
-        .sort((a, b) => a.nombre.localeCompare(b.nombre))
+        }))
+        .sort((a, b) => (a as any).nombre.localeCompare((b as any).nombre)) as Producto[]
       setProductos(data)
     } catch (error) {
       console.error('Error loading productos:', error)

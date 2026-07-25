@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     // Enviar email al admin
     const adminResponse = await resend.emails.send({
       from: 'onboarding@resend.dev',
-      to: 'info@frutasverduras.cl',
+      to: 'faldunate@gmail.com',
       subject: `Nuevo contacto: ${asunto}`,
       html: `
         <h2>Nuevo mensaje de contacto</h2>

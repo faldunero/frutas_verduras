@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
 
     const response = await resend.emails.send({
       from: 'onboarding@resend.dev',
-      to: 'info@frutasverduras.cl',
+      to: 'faldunate@gmail.com',
       subject: `🚨 NUEVA ORDEN #${ordenId} - $${total.toLocaleString('es-CL')}`,
       html: adminEmailHtml,
     })

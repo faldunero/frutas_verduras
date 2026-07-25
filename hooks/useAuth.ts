@@ -43,7 +43,7 @@ export function useAuth() {
       }
     } catch (error) {
       console.error('Error fetching user rol:', error)
-      setRol('client')
+      setRol('user')
     }
   }
 

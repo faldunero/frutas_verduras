@@ -81,7 +81,6 @@ export const emailConfirmacionPedido = (
 
           <div class="footer">
             <p>© 2026 Frutas & Verduras. Todos los derechos reservados.</p>
-            <p>Este email fue enviado a ${to}</p>
           </div>
         </div>
       </body>

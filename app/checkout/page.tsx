@@ -14,7 +14,6 @@ export default function CheckoutPage() {
   const { items, getSubtotal, clearCart } = useCart()
   const { user, isAuthenticated } = useAuth()
   const [loading, setLoading] = useState(false)
-  const [loadingDatos, setLoadingDatos] = useState(true)
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -54,8 +53,6 @@ export default function CheckoutPage() {
         }
       } catch (error) {
         console.error('Error loading user data:', error)
-      } finally {
-        setLoadingDatos(false)
       }
     }
     loadUserData()

@@ -175,7 +175,7 @@ export default function CheckoutPage() {
 
       const docRef = await addDoc(collection(db, 'ordenes'), ordenData)
 
-      // Enviar email de confirmación
+      // Enviar email de confirmación al cliente
       try {
         await fetch('/api/send-order-confirmation', {
           method: 'POST',
@@ -195,6 +195,28 @@ export default function CheckoutPage() {
       } catch (error) {
         console.error('Error sending order confirmation email:', error)
         // No bloqueamos si falla el email
+      }
+
+      // Notificar al admin
+      try {
+        await fetch('/api/notify-admin-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ordenId: docRef.id,
+            nombre: formData.nombre,
+            email: formData.email,
+            telefono: formData.telefono,
+            comuna: formData.comuna,
+            items: ordenData.items,
+            total: total,
+            metodoPago: formData.metodoPago,
+            estado: ordenData.estado,
+          }),
+        })
+      } catch (error) {
+        console.error('Error notifying admin:', error)
+        // No bloqueamos si falla la notificación
       }
 
       // Si es Transbank, intentar crear transacción PRIMERO

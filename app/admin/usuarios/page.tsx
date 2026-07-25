@@ -9,9 +9,11 @@ import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
 import toast from 'react-hot-toast'
 import { FiTrash2, FiEdit2, FiPlus } from 'react-icons/fi'
 import { COMUNAS_PERMITIDAS } from '@/lib/constants'
+import { generateClientId } from '@/lib/clientIdHelper'
 
 interface Usuario {
   id: string
+  id_cliente?: string
   email: string
   nombre: string
   telefono?: string
@@ -140,7 +142,11 @@ export default function UsuariosPage() {
           'TempPassword123!' // Contraseña temporal - el usuario debe cambiarla
         )
 
+        // Generar ID de cliente secuencial
+        const id_cliente = await generateClientId()
+
         await setDoc(doc(db, 'users', userCredential.user.uid), {
+          id_cliente,
           email: formData.email,
           nombre: formData.nombre,
           telefono: formData.telefono || '',
@@ -152,7 +158,7 @@ export default function UsuariosPage() {
           createdAt: new Date(),
         })
 
-        toast.success(`Usuario creado. Contraseña temporal: TempPassword123!`)
+        toast.success(`Usuario creado (${id_cliente}). Contraseña temporal: TempPassword123!`)
         fetchUsuarios()
       }
 
@@ -481,6 +487,9 @@ export default function UsuariosPage() {
                   <thead className="bg-gray-100">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                        ID Cliente
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                         Email
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
@@ -509,6 +518,11 @@ export default function UsuariosPage() {
                   <tbody className="divide-y divide-gray-200">
                     {usuariosFiltrados.map((usuario) => (
                       <tr key={usuario.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 text-gray-900 text-sm font-bold">
+                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
+                            {usuario.id_cliente || '-'}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 text-gray-900 text-sm">{usuario.email}</td>
                         <td className="px-6 py-4 text-gray-900">
                           <div>

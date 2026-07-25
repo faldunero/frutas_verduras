@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
     `
 
     const response = await resend.emails.send({
-      from: 'ordenes@frutasverduras.cl',
+      from: 'onboarding@resend.dev',
       to: email,
       subject: `Confirmación de Orden #${ordenId} - Frutas & Verduras`,
       html: emailHtml,

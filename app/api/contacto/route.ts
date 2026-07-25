@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Enviar email al admin
     const adminResponse = await resend.emails.send({
-      from: 'noreply@frutasverduras.cl',
+      from: 'onboarding@resend.dev',
       to: 'info@frutasverduras.cl',
       subject: `Nuevo contacto: ${asunto}`,
       html: `
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     // Enviar confirmación al usuario
     await resend.emails.send({
-      from: 'noreply@frutasverduras.cl',
+      from: 'onboarding@resend.dev',
       to: email,
       subject: 'Hemos recibido tu mensaje - Frutas & Verduras',
       html: `

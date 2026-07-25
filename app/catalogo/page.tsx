@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { db, Producto } from '@/lib/firebase'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, getDocs, query, where, onSnapshot } from 'firebase/firestore'
 import { useCart } from '@/hooks/useCart'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -63,38 +63,39 @@ export default function CatalogoPage() {
   }, [productos, busqueda, precioMin, precioMax, soloDisponibles, ordenar])
 
   useEffect(() => {
-    fetchProductos()
-  }, [categoria])
+    setLoading(true)
+    let q
 
-  const fetchProductos = async () => {
-    try {
-      setLoading(true)
-      let q
-
-      if (categoria === 'todos') {
-        q = query(collection(db, 'productos'))
-      } else {
-        q = query(
-          collection(db, 'productos'),
-          where('categoria', '==', categoria)
-        )
-      }
-
-      const querySnapshot = await getDocs(q)
-      const allData = querySnapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as any),
-        })) as (Producto & { id: string })[]
-      const data = allData.filter((p) => p.disponible === true)
-      setProductos(data)
-    } catch (error) {
-      console.error('Error fetching productos:', error)
-      toast.error('Error al cargar productos')
-    } finally {
-      setLoading(false)
+    if (categoria === 'todos') {
+      q = query(collection(db, 'productos'))
+    } else {
+      q = query(
+        collection(db, 'productos'),
+        where('categoria', '==', categoria)
+      )
     }
-  }
+
+    // Listener en tiempo real
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      try {
+        const allData = querySnapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...(doc.data() as any),
+          })) as (Producto & { id: string })[]
+        const data = allData.filter((p) => p.disponible === true)
+        setProductos(data)
+        setLoading(false)
+      } catch (error) {
+        console.error('Error processing productos:', error)
+        toast.error('Error al cargar productos')
+        setLoading(false)
+      }
+    })
+
+    // Cleanup: desuscribirse cuando se desmonta o cambia categoría
+    return () => unsubscribe()
+  }, [categoria])
 
   const handleAgregar = (producto: Producto & { id: string }) => {
     setSelectedProduct(producto)

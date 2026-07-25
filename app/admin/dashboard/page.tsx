@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { db } from '@/lib/firebase'
-import { collection, getDocs, query } from 'firebase/firestore'
+import { collection, getDocs, query, onSnapshot } from 'firebase/firestore'
 import Link from 'next/link'
 import { FiArrowLeft, FiTrendingUp, FiShoppingCart, FiUsers, FiMap } from 'react-icons/fi'
 import {
@@ -49,36 +49,47 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [periodo, setPeriodo] = useState<'diario' | 'semanal' | 'mensual'>('diario')
 
-  const loadDatos = async () => {
-    try {
-      setLoading(true)
-      const q = query(collection(db, 'ordenes'))
-      const snapshot = await getDocs(q)
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Orden[]
-      setOrdenes(data)
+useEffect(() => {
+    if (!isAdmin) return
 
-      // Cargar análisis histórico
-      const qAnalisis = query(collection(db, 'analisisHistorico'))
-      const snapshotAnalisis = await getDocs(qAnalisis)
-      const dataAnalisis = snapshotAnalisis.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as AnalisisHistorico[]
-      setAnalisisHistorico(dataAnalisis)
-    } catch (error) {
-      console.error('Error loading data:', error)
-      toast.error('Error al cargar datos')
-    } finally {
-      setLoading(false)
-    }
-  }
+    setLoading(true)
 
-  useEffect(() => {
-    if (isAdmin) {
-      loadDatos()
+    // Listener en tiempo real para órdenes
+    const q = query(collection(db, 'ordenes'))
+    const unsubscribeOrdenes = onSnapshot(q, (snapshot) => {
+      try {
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Orden[]
+        setOrdenes(data)
+      } catch (error) {
+        console.error('Error loading ordenes:', error)
+        toast.error('Error al cargar órdenes')
+      }
+    })
+
+    // Listener en tiempo real para análisis
+    const qAnalisis = query(collection(db, 'analisisHistorico'))
+    const unsubscribeAnalisis = onSnapshot(qAnalisis, (snapshot) => {
+      try {
+        const dataAnalisis = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as AnalisisHistorico[]
+        setAnalisisHistorico(dataAnalisis)
+        setLoading(false)
+      } catch (error) {
+        console.error('Error loading analisis:', error)
+        toast.error('Error al cargar análisis')
+        setLoading(false)
+      }
+    })
+
+    // Cleanup: desuscribirse cuando se desmonta
+    return () => {
+      unsubscribeOrdenes()
+      unsubscribeAnalisis()
     }
   }, [isAdmin])
 

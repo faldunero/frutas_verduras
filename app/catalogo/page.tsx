@@ -23,7 +23,7 @@ export default function CatalogoPage() {
   const [precioMin, setPrecioMin] = useState<number>(0)
   const [precioMax, setPrecioMax] = useState<number>(50000)
   const [soloDisponibles, setSoloDisponibles] = useState<boolean>(true)
-  const [ordenar, setOrdenar] = useState<'relevancia' | 'precio-asc' | 'precio-desc' | 'nombre' | 'rating'>('relevancia')
+  const [ordenar, setOrdenar] = useState<'relevancia' | 'precio-asc' | 'precio-desc' | 'nombre'>('relevancia')
   const [selectedProduct, setSelectedProduct] = useState<(Producto & { id: string }) | null>(null)
   const [cantidadSeleccionada, setCantidadSeleccionada] = useState<number>(1)
   const { addItem } = useCart()
@@ -52,9 +52,6 @@ export default function CatalogoPage() {
         break
       case 'nombre':
         resultado.sort((a, b) => a.nombre.localeCompare(b.nombre))
-        break
-      case 'rating':
-        resultado.sort((a, b) => (b.rating || 0) - (a.rating || 0))
         break
       case 'relevancia':
       default:
@@ -149,7 +146,6 @@ export default function CatalogoPage() {
             <option value="precio-asc">Precio: Menor a Mayor</option>
             <option value="precio-desc">Precio: Mayor a Menor</option>
             <option value="nombre">Nombre: A-Z</option>
-            <option value="rating">Mejor Calificados</option>
           </select>
         </div>
 

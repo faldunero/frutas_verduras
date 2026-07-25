@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { doc, updateDoc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
+export const dynamic = 'force-dynamic'
+
 const WebpayPlus = require('transbank-sdk').WebpayPlus
 
 export async function GET(request: NextRequest) {

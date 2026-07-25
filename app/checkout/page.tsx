@@ -175,6 +175,28 @@ export default function CheckoutPage() {
 
       const docRef = await addDoc(collection(db, 'ordenes'), ordenData)
 
+      // Enviar email de confirmación
+      try {
+        await fetch('/api/send-order-confirmation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ordenId: docRef.id,
+            email: formData.email,
+            nombre: formData.nombre,
+            items: ordenData.items,
+            subtotal: subtotal,
+            envio: envio,
+            total: total,
+            metodoPago: formData.metodoPago,
+            estado: ordenData.estado,
+          }),
+        })
+      } catch (error) {
+        console.error('Error sending order confirmation email:', error)
+        // No bloqueamos si falla el email
+      }
+
       // Si es Transbank, intentar crear transacción PRIMERO
       if (formData.metodoPago === 'transbank') {
         toast.loading('Redirigiendo a Transbank...')

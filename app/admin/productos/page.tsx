@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { AdminGuard } from '@/components/AdminGuard'
 import { db } from '@/lib/firebase'
-import { collection, getDocs, deleteDoc, doc, addDoc } from 'firebase/firestore'
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 import { FiTrash2, FiEdit2 } from 'react-icons/fi'
 

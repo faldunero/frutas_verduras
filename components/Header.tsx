@@ -36,9 +36,6 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-8">
             {isAdmin ? (
               <>
-                <Link href="/admin/dashboard" className="hover:text-green-100 transition">
-                  Dashboard
-                </Link>
                 <Link href="/admin/productos" className="hover:text-green-100 transition">
                   Productos
                 </Link>
@@ -48,11 +45,14 @@ export function Header() {
                 <Link href="/admin/analizador" className="hover:text-green-100 transition">
                   Analizador
                 </Link>
-                <Link href="/admin/solicitudes-arcop" className="hover:text-green-100 transition">
-                  ARCOP
-                </Link>
                 <Link href="/admin/usuarios" className="hover:text-green-100 transition">
                   Usuarios
+                </Link>
+                <Link href="/admin/dashboard" className="hover:text-green-100 transition">
+                  Dashboard
+                </Link>
+                <Link href="/admin/solicitudes-arcop" className="hover:text-green-100 transition">
+                  ARCOP
                 </Link>
               </>
             ) : (
@@ -142,9 +142,6 @@ export function Header() {
         <div className="md:hidden pb-4 flex gap-4 flex-wrap">
           {isAdmin ? (
             <>
-              <Link href="/admin/dashboard" className="text-sm hover:text-green-100">
-                Dashboard
-              </Link>
               <Link href="/admin/productos" className="text-sm hover:text-green-100">
                 Productos
               </Link>
@@ -154,11 +151,14 @@ export function Header() {
               <Link href="/admin/analizador" className="text-sm hover:text-green-100">
                 Analizador
               </Link>
-              <Link href="/admin/solicitudes-arcop" className="text-sm hover:text-green-100">
-                ARCOP
-              </Link>
               <Link href="/admin/usuarios" className="text-sm hover:text-green-100">
                 Usuarios
+              </Link>
+              <Link href="/admin/dashboard" className="text-sm hover:text-green-100">
+                Dashboard
+              </Link>
+              <Link href="/admin/solicitudes-arcop" className="text-sm hover:text-green-100">
+                ARCOP
               </Link>
             </>
           ) : (

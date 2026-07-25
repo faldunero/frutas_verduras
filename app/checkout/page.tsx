@@ -177,7 +177,7 @@ export default function CheckoutPage() {
         anexo: formData.anexo,
         comuna: formData.comuna,
         metodoPago: formData.metodoPago,
-        estado: formData.metodoPago === 'transbank' ? 'pendiente' : 'confirmada',
+        estado: 'pendiente', // Todas las órdenes empiezan como pendiente, se actualizan cuando se confirma pago
         subtotal,
         impuestos,
         envio,

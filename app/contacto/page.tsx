@@ -38,9 +38,17 @@ export default function ContactoPage() {
     setSending(true)
 
     try {
-      // En producción, aquí enviarías el email a un servidor
-      // Por ahora solo mostramos un mensaje de éxito
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await fetch('/api/contacto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al enviar')
+      }
 
       toast.success('Mensaje enviado. Te contactaremos pronto')
       setFormData({
@@ -50,6 +58,7 @@ export default function ContactoPage() {
         mensaje: '',
       })
     } catch (error) {
+      console.error('Error:', error)
       toast.error('Error al enviar el mensaje')
     } finally {
       setSending(false)

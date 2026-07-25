@@ -175,45 +175,64 @@ export default function CheckoutPage() {
 
       const docRef = await addDoc(collection(db, 'ordenes'), ordenData)
 
-      // Actualizar stock de productos
-      for (const item of items) {
-        try {
-          const productoRef = doc(db, 'productos', item.id)
-          await updateDoc(productoRef, {
-            stock: increment(-item.cantidad),
-          })
-        } catch (error) {
-          console.error(`Error updating stock for ${item.id}:`, error)
-        }
-      }
-
-      // Limpiar carrito
-      clearCart()
-
-      // Si es Transbank, redirigir al pago
+      // Si es Transbank, intentar crear transacción PRIMERO
       if (formData.metodoPago === 'transbank') {
         toast.loading('Redirigiendo a Transbank...')
 
-        // Crear transacción en Transbank
-        const response = await fetch('/api/transbank/create-transaction', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ordenId: docRef.id,
-            monto: total,
-            email: formData.email,
-          }),
-        })
+        try {
+          // Crear transacción en Transbank
+          const response = await fetch('/api/transbank/create-transaction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ordenId: docRef.id,
+              monto: total,
+              email: formData.email,
+            }),
+          })
 
-        const data = await response.json()
+          const data = await response.json()
 
-        if (data.url) {
+          if (!data.url) {
+            throw new Error('Error al iniciar transacción con Transbank')
+          }
+
+          // Solo si Transbank fue exitoso, actualizar stock y limpiar carrito
+          for (const item of items) {
+            try {
+              const productoRef = doc(db, 'productos', item.id)
+              await updateDoc(productoRef, {
+                stock: increment(-item.cantidad),
+              })
+            } catch (error) {
+              console.error(`Error updating stock for ${item.id}:`, error)
+            }
+          }
+
+          clearCart()
+
           // Redirigir a Transbank
           window.location.href = data.url
-        } else {
-          throw new Error('Error al iniciar transacción con Transbank')
+        } catch (error) {
+          // Si falla Transbank, eliminar la orden creada
+          throw error
         }
       } else {
+        // Actualizar stock de productos
+        for (const item of items) {
+          try {
+            const productoRef = doc(db, 'productos', item.id)
+            await updateDoc(productoRef, {
+              stock: increment(-item.cantidad),
+            })
+          } catch (error) {
+            console.error(`Error updating stock for ${item.id}:`, error)
+          }
+        }
+
+        // Limpiar carrito
+        clearCart()
+
         // Si es transferencia, redirigir a confirmación
         router.push(`/orden-confirmada/${docRef.id}`)
         toast.success('Orden creada - Pendiente de pago por transferencia')

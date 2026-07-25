@@ -84,7 +84,7 @@ export default function CatalogoPage() {
       const allData = querySnapshot.docs
         .map((doc) => ({
           id: doc.id,
-          ...doc.data(),
+          ...(doc.data() as any),
         })) as (Producto & { id: string })[]
       const data = allData.filter((p) => p.disponible === true)
       setProductos(data)

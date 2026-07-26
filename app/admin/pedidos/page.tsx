@@ -100,7 +100,21 @@ export default function PedidosPage() {
     loadOrdenes()
   }, [])
 
-  if (!isAuthenticated || !isAdmin) {
+  // Mostrar loading mientras se verifica autenticación
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <p className="text-gray-600">Verificando acceso...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4">

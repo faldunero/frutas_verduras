@@ -113,8 +113,8 @@ export default function CuadraturePage() {
 
           ordenesData.push({
             orderId: ordenDoc.id,
-            nombreCliente: 'N/A',
-            idCliente: 'N/A',
+            nombreCliente: orden.nombre || 'Sin nombre',
+            idCliente: orden.clientId || orden.userId || '-',
             costo: costoTotal,
             venta: ventaTotal,
             fecha: fechaFormato,
@@ -355,7 +355,8 @@ export default function CuadraturePage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Orden</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Orden ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Cliente</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Costo</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Venta</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Ganancia</th>
@@ -367,6 +368,7 @@ export default function CuadraturePage() {
                   {ordenesPaginadas.map((orden) => (
                     <tr key={orden.orderId} className="hover:bg-gray-50">
                       <td className="px-6 py-4 text-sm font-mono text-gray-900">{orden.orderId.slice(0, 8)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{orden.nombreCliente}</td>
                       <td className="px-6 py-4 text-right text-sm text-red-600">${orden.costo.toLocaleString('es-CL', { maximumFractionDigits: 0 })}</td>
                       <td className="px-6 py-4 text-right text-sm text-blue-600">${orden.venta.toLocaleString('es-CL', { maximumFractionDigits: 0 })}</td>
                       <td className="px-6 py-4 text-right text-sm font-medium">${orden.ganancia.toLocaleString('es-CL', { maximumFractionDigits: 0 })}</td>

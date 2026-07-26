@@ -74,27 +74,11 @@ export default function CuadraturePage() {
 
       console.log('Total órdenes encontradas:', ordenesSnapshot.size)
 
-      // Procesar órdenes
+      // Procesar órdenes - RÁPIDO, sin llamadas extra de Firebase
       for (const ordenDoc of ordenesSnapshot.docs) {
         const orden = ordenDoc.data()
-        console.log('Procesando orden:', ordenDoc.id)
 
         try {
-          // Obtener datos del cliente
-          const userId = orden.userId || orden.clientId
-          let nombreCliente = 'Cliente desconocido'
-
-          if (userId) {
-            try {
-              const clienteDoc = await getDoc(doc(db, 'users', userId))
-              if (clienteDoc.exists()) {
-                nombreCliente = clienteDoc.data().nombre || nombreCliente
-              }
-            } catch (userError) {
-              // Continuar sin datos del cliente
-            }
-          }
-
           // Procesar fecha de la orden
           let fechaOrden = new Date()
           let fechaFormato = '-'
@@ -112,7 +96,7 @@ export default function CuadraturePage() {
           // Obtener margen vigente
           const margenOrden = obtenerMargen()
 
-          // Calcular costo y venta usando margen histórico
+          // Calcular costo y venta usando margen
           let costoTotal = 0
           let ventaTotal = orden.total || 0
 
@@ -129,8 +113,8 @@ export default function CuadraturePage() {
 
           ordenesData.push({
             orderId: ordenDoc.id,
-            nombreCliente,
-            idCliente: orden.clientId || orden.userId || '-',
+            nombreCliente: 'N/A',
+            idCliente: 'N/A',
             costo: costoTotal,
             venta: ventaTotal,
             fecha: fechaFormato,

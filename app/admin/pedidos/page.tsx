@@ -64,15 +64,17 @@ export default function PedidosPage() {
   const [paginaActual, setPaginaActual] = useState(1)
 
   // Usar estados del config, con fallback a los defaults
-  const estados = config?.estados || Object.keys(DEFAULT_STATUS_LABELS)
+  const estados = Array.isArray(config?.estados) && config.estados.length > 0
+    ? config.estados
+    : Object.keys(DEFAULT_STATUS_LABELS)
 
   // Crear mapeos de colores y etiquetas basados en config
-  const statusColors: { [key: string]: string } = estados.reduce((acc, estado) => ({
+  const statusColors: { [key: string]: string } = (estados || []).reduce((acc: any, estado: string) => ({
     ...acc,
     [estado]: DEFAULT_STATUS_COLORS[estado] || 'bg-gray-100 text-gray-800',
   }), {})
 
-  const statusLabels: { [key: string]: string } = estados.reduce((acc, estado) => ({
+  const statusLabels: { [key: string]: string } = (estados || []).reduce((acc: any, estado: string) => ({
     ...acc,
     [estado]: DEFAULT_STATUS_LABELS[estado] || estado.charAt(0).toUpperCase() + estado.slice(1),
   }), {})

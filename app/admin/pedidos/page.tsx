@@ -60,6 +60,8 @@ export default function PedidosPage() {
   const [fechaHasta, setFechaHasta] = useState<string>('')
   const [busquedaUsuario, setBusquedaUsuario] = useState<string>('')
   const [busquedaOrden, setBusquedaOrden] = useState<string>('')
+  const [itemsPorPagina, setItemsPorPagina] = useState(20)
+  const [paginaActual, setPaginaActual] = useState(1)
 
   // Crear mapeos de colores y etiquetas basados en config
   const statusColors: { [key: string]: string } = config.estados.reduce((acc, estado) => ({
@@ -146,6 +148,17 @@ export default function PedidosPage() {
       }
       return true
     })
+
+  // Paginación
+  const totalPaginas = Math.ceil(ordenesFiltradas.length / itemsPorPagina)
+  const inicio = (paginaActual - 1) * itemsPorPagina
+  const fin = inicio + itemsPorPagina
+  const ordenesPaginadas = ordenesFiltradas.slice(inicio, fin)
+
+  // Reset paginación cuando cambian filtros
+  useEffect(() => {
+    setPaginaActual(1)
+  }, [filtro, fechaDesde, fechaHasta, busquedaUsuario, busquedaOrden])
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -264,9 +277,25 @@ export default function PedidosPage() {
             )}
           </div>
 
-          <p className="text-sm text-gray-600">
-            Total: {ordenesFiltradas.length} pedidos
-          </p>
+          <div className="flex justify-between items-center">
+            <p className="text-sm text-gray-600">
+              Total: {ordenesFiltradas.length} pedidos
+            </p>
+            {ordenesFiltradas.length > 0 && (
+              <select
+                value={itemsPorPagina}
+                onChange={(e) => {
+                  setItemsPorPagina(Number(e.target.value))
+                  setPaginaActual(1)
+                }}
+                className="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 text-sm"
+              >
+                <option value={20}>20 por página</option>
+                <option value={40}>40 por página</option>
+                <option value={100}>100 por página</option>
+              </select>
+            )}
+          </div>
         </div>
 
         {loading ? (
@@ -281,8 +310,9 @@ export default function PedidosPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6">
-            {ordenesFiltradas.map((orden) => (
+          <>
+            <div className="grid gap-6">
+              {ordenesPaginadas.map((orden) => (
               <Link
                 key={orden.id}
                 href={`/orden-confirmada/${orden.id}`}
@@ -356,8 +386,39 @@ export default function PedidosPage() {
                   </div>
                 </div>
               </Link>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            {/* Paginación */}
+            {ordenesFiltradas.length > itemsPorPagina && (
+              <div className="mt-8 flex flex-col sm:flex-row justify-between items-center bg-white rounded-lg shadow p-4 gap-4">
+                <div className="text-sm text-gray-600">
+                  Mostrando {inicio + 1}-{Math.min(fin, ordenesFiltradas.length)} de{' '}
+                  {ordenesFiltradas.length} órdenes
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setPaginaActual(Math.max(1, paginaActual - 1))}
+                    disabled={paginaActual === 1}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg font-medium transition"
+                  >
+                    ← Anterior
+                  </button>
+                  <span className="px-4 py-2 text-sm font-medium text-gray-700">
+                    Página {paginaActual} de {totalPaginas}
+                  </span>
+                  <button
+                    onClick={() => setPaginaActual(Math.min(totalPaginas, paginaActual + 1))}
+                    disabled={paginaActual === totalPaginas}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg font-medium transition"
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

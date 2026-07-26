@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+import { COMUNAS_PERMITIDAS } from '@/lib/constants'
 
 function VerifyEmailContent() {
   const router = useRouter()
@@ -13,6 +14,9 @@ function VerifyEmailContent() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [nombre, setNombre] = useState('')
+  const [telefono, setTelefono] = useState('')
+  const [comuna, setComuna] = useState('')
+  const [direccion, setDireccion] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const token = searchParams.get('token')
@@ -30,7 +34,7 @@ function VerifyEmailContent() {
   const handleVerifyAndCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!password || !nombre || !confirmPassword) {
+    if (!password || !nombre || !confirmPassword || !telefono || !comuna || !direccion) {
       toast.error('Completa todos los campos')
       return
     }
@@ -57,6 +61,9 @@ function VerifyEmailContent() {
           email,
           password,
           nombre,
+          telefono,
+          comuna,
+          direccion,
         }),
       })
 
@@ -130,6 +137,53 @@ function VerifyEmailContent() {
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Tu nombre"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Teléfono *
+              </label>
+              <input
+                type="tel"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                placeholder="Ej: +56912345678"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Comuna *
+              </label>
+              <select
+                value={comuna}
+                onChange={(e) => setComuna(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                required
+              >
+                <option value="">Selecciona tu comuna</option>
+                {COMUNAS_PERMITIDAS.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Dirección *
+              </label>
+              <input
+                type="text"
+                value={direccion}
+                onChange={(e) => setDireccion(e.target.value)}
+                placeholder="Tu dirección completa"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                 required
               />

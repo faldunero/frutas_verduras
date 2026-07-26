@@ -87,6 +87,9 @@ function RegisterForm() {
           <div className="text-5xl mb-2">🥬</div>
           <h1 className="text-3xl font-bold text-gray-900">Frutas & Verduras</h1>
           <p className="text-gray-600 mt-2">Crea tu cuenta</p>
+          <p className="text-xs text-gray-500 mt-3 bg-green-50 py-2 px-3 rounded">
+            Paso 1 de 2: Verifica tu email
+          </p>
         </div>
 
         {/* Form */}
@@ -119,16 +122,17 @@ function RegisterForm() {
             />
           </div>
 
-          <p className="text-xs text-gray-500">
-            Recibirás un email con un link para confirmar tu cuenta y crear tu contraseña.
-          </p>
+          <div className="bg-blue-50 border border-blue-200 p-3 rounded text-sm text-blue-800">
+            <strong>¿Cómo funciona?</strong><br/>
+            Te enviaremos un email de verificación. Haz clic en el link para completar tu registro, crear contraseña y llenar tus datos de envío.
+          </div>
 
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition"
           >
-            {loading ? 'Enviando email...' : 'Continuar'}
+            {loading ? 'Enviando email...' : 'Enviar email de verificación'}
           </button>
         </form>
 

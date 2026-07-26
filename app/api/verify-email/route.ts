@@ -8,9 +8,9 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { token, email, password, nombre } = body
+    const { token, email, password, nombre, telefono, comuna, direccion } = body
 
-    if (!token || !email || !password || !nombre) {
+    if (!token || !email || !password || !nombre || !telefono || !comuna || !direccion) {
       return NextResponse.json(
         { error: 'Parámetros requeridos faltantes' },
         { status: 400 }
@@ -72,6 +72,9 @@ export async function POST(request: NextRequest) {
       uid,
       email,
       nombre,
+      telefono,
+      comuna,
+      direccion,
       emailVerified: true,
       bloqueado: false,
       rol: 'user',

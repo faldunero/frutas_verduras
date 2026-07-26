@@ -104,10 +104,10 @@ export default function PedidosPage() {
   }
 
   useEffect(() => {
-    if (isAdmin) {
+    if (isAuthenticated && isAdmin) {
       loadOrdenes()
     }
-  }, [isAdmin])
+  }, [])
 
   if (!isAuthenticated || !isAdmin) {
     return (

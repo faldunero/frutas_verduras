@@ -102,7 +102,7 @@ export default function CuadraturePage() {
 
           if (orden.items && Array.isArray(orden.items)) {
             for (const item of orden.items) {
-              const precio = typeof item.precio === 'number' ? item.precio : 0
+              const precio = typeof item.precioUnitario === 'number' ? item.precioUnitario : 0
               const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 1
               costoTotal += precio * (1 - margenOrden) * cantidad
             }

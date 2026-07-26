@@ -210,6 +210,8 @@ export default function NuevoProductoPage() {
                     <option value="frutas">Frutas</option>
                     <option value="verduras">Verduras</option>
                     <option value="organico">Orgánico</option>
+                    <option value="carnes">Carnes</option>
+                    <option value="embutidos">Embutidos</option>
                     <option value="otro">Otro</option>
                   </select>
                 </div>

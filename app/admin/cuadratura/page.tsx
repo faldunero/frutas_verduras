@@ -33,12 +33,21 @@ export default function CuadraturePage() {
       const ordenesSnapshot = await getDocs(collection(db, 'ordenes'))
       const ordenesData: OrdenAnalisis[] = []
 
+      console.log('Total órdenes encontradas:', ordenesSnapshot.size)
+
       for (const ordenDoc of ordenesSnapshot.docs) {
         const orden = ordenDoc.data()
+        console.log('Procesando orden:', ordenDoc.id, orden)
 
         try {
-          // Obtener datos del cliente
-          const clienteDoc = await getDoc(doc(db, 'users', orden.userId))
+          // Obtener datos del cliente - intentar con userId o clientId
+          const userId = orden.userId || orden.clientId
+          if (!userId) {
+            console.warn('No se encontró userId para orden:', ordenDoc.id)
+            continue
+          }
+
+          const clienteDoc = await getDoc(doc(db, 'users', userId))
           const nombreCliente = clienteDoc.exists()
             ? clienteDoc.data().nombre
             : 'Cliente desconocido'
@@ -109,6 +118,7 @@ export default function CuadraturePage() {
         return dateB - dateA
       })
 
+      console.log('Órdenes procesadas exitosamente:', ordenesData.length)
       setOrdenes(ordenesData)
 
       // Calcular totales
@@ -122,8 +132,8 @@ export default function CuadraturePage() {
         ganancia: totalGanancia,
       })
     } catch (error) {
-      console.error('Error:', error)
-      toast.error('Error al cargar órdenes')
+      console.error('Error cargando órdenes:', error)
+      toast.error(`Error al cargar órdenes: ${error instanceof Error ? error.message : 'Error desconocido'}`)
     } finally {
       setLoading(false)
     }

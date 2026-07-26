@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
-import { FiLogOut, FiUser, FiShoppingCart, FiMenu, FiX } from 'react-icons/fi'
+import { FiLogOut, FiUser, FiShoppingCart, FiMenu, FiX, FiChevronDown } from 'react-icons/fi'
 import { useState } from 'react'
 
 export function Header() {
@@ -11,6 +11,7 @@ export function Header() {
   const { items } = useCart()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     try {

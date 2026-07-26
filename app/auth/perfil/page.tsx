@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { getAuth } from 'firebase/auth'
+import { getAuth, sendEmailVerification } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
@@ -13,8 +13,10 @@ export default function PerfilPage() {
   const auth = getAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [sendingVerification, setSendingVerification] = useState(false)
   const [usuario, setUsuario] = useState<any>(null)
   const [telefono, setTelefono] = useState('')
+  const [currentUser, setCurrentUser] = useState<any>(null)
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -22,6 +24,8 @@ export default function PerfilPage() {
         router.push('/auth/login')
         return
       }
+
+      setCurrentUser(user)
 
       try {
         const userRef = doc(db, 'users', user.uid)
@@ -31,6 +35,14 @@ export default function PerfilPage() {
           const userData = userDoc.data()
           setUsuario(userData)
           setTelefono(userData.telefono || '')
+        } else {
+          // Si no existe en Firestore, usar datos de Auth
+          setUsuario({
+            nombre: user.displayName || 'Usuario',
+            email: user.email || '',
+            role: 'usuario',
+            emailVerified: user.emailVerified,
+          })
         }
       } catch (error) {
         console.error('Error loading user:', error)
@@ -76,6 +88,21 @@ export default function PerfilPage() {
     }
   }
 
+  const handleSendVerificationEmail = async () => {
+    if (!currentUser) return
+
+    setSendingVerification(true)
+    try {
+      await sendEmailVerification(currentUser)
+      toast.success('Email de verificación enviado. Revisa tu buzón.')
+    } catch (error: any) {
+      console.error('Error:', error)
+      toast.error('Error al enviar email de verificación')
+    } finally {
+      setSendingVerification(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -110,6 +137,20 @@ export default function PerfilPage() {
           </div>
 
           <form onSubmit={handleSave} className="space-y-6">
+            {/* Rol */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Rol
+              </label>
+              <input
+                type="text"
+                value={usuario?.role === 'admin' ? 'Administrador' : 'Usuario'}
+                disabled
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+              />
+              <p className="text-xs text-gray-500 mt-1">Tu rol en el sistema</p>
+            </div>
+
             {/* Nombre */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -117,7 +158,7 @@ export default function PerfilPage() {
               </label>
               <input
                 type="text"
-                value={usuario.nombre || ''}
+                value={usuario?.nombre || ''}
                 disabled
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
               />
@@ -129,13 +170,27 @@ export default function PerfilPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email
               </label>
-              <input
-                type="email"
-                value={usuario.email || ''}
-                disabled
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-              />
-              <p className="text-xs text-gray-500 mt-1">No se puede modificar</p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={usuario?.email || currentUser?.email || ''}
+                  disabled
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+                />
+                <span className={`px-3 py-2 rounded-lg text-sm font-medium ${currentUser?.emailVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                  {currentUser?.emailVerified ? '✓ Verificado' : '⚠ No verificado'}
+                </span>
+              </div>
+              {!currentUser?.emailVerified && (
+                <button
+                  type="button"
+                  onClick={handleSendVerificationEmail}
+                  disabled={sendingVerification}
+                  className="mt-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-3 py-1 rounded transition"
+                >
+                  {sendingVerification ? 'Enviando...' : 'Enviar email de verificación'}
+                </button>
+              )}
             </div>
 
             {/* Teléfono */}

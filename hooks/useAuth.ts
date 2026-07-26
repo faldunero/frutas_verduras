@@ -52,8 +52,20 @@ export function useAuth() {
       const result = await signInWithEmailAndPassword(auth, email, password)
       if (result.user) {
         await fetchUserRol(result.user.uid)
+
+        // Verificar rol y redirigir
+        const userDoc = await getDoc(doc(db, 'users', result.user.uid))
+        if (userDoc.exists()) {
+          const userData = userDoc.data()
+          if (userData.rol === 'admin') {
+            router.push('/admin/productos')
+          } else {
+            router.push('/catalogo')
+          }
+        } else {
+          router.push('/catalogo')
+        }
       }
-      router.push('/')
     } catch (error: any) {
       throw new Error(error.message || 'Error al iniciar sesión')
     }

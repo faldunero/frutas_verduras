@@ -63,23 +63,23 @@ export function Header() {
               {isAdmin ? (
                 <div className="flex items-center gap-6">
                   {adminMenuItems.map((item) => (
-                    <Link
+                    <button
                       key={item.href}
-                      href={item.href}
-                      className="hover:text-green-100 transition text-sm font-medium cursor-pointer"
+                      onClick={() => window.location.href = item.href}
+                      className="hover:text-green-100 transition text-sm font-medium cursor-pointer bg-transparent border-0 p-0 text-white"
                     >
                       {item.label}
-                    </Link>
+                    </button>
                   ))}
                 </div>
               ) : (
                 <>
-                  <Link href="/catalogo" className="hover:text-green-100 transition font-medium cursor-pointer">
+                  <button onClick={() => window.location.href = "/catalogo"} className="hover:text-green-100 transition font-medium cursor-pointer bg-transparent border-0 p-0 text-white">
                     Catálogo
-                  </Link>
-                  <Link href="/#faqs" className="hover:text-green-100 transition font-medium cursor-pointer">
+                  </button>
+                  <button onClick={() => window.location.href = "/#faqs"} className="hover:text-green-100 transition font-medium cursor-pointer bg-transparent border-0 p-0 text-white">
                     FAQs
-                  </Link>
+                  </button>
                 </>
               )}
             </nav>

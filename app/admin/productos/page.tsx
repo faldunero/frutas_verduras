@@ -11,7 +11,7 @@ import { FiTrash2, FiEdit2 } from 'react-icons/fi'
 interface Producto {
   id: string
   nombre: string
-  categoria: 'frutas' | 'verduras' | 'organico' | 'otro'
+  categoria: 'frutas' | 'verduras' | 'organico' | 'carnes' | 'embutidos' | 'otro'
   peso: string
   precio: number
   descripcion: string
@@ -27,6 +27,7 @@ export default function ProductosPage() {
   const [busqueda, setBusqueda] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState<string>('')
   const [filtroDisponible, setFiltroDisponible] = useState<string>('')
+  const [seleccionados, setSeleccionados] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchProductos()
@@ -58,6 +59,46 @@ export default function ProductosPage() {
     } catch (error) {
       console.error('Error:', error)
       toast.error('Error al eliminar producto')
+    }
+  }
+
+  const handleSelectProduct = (id: string) => {
+    const newSeleccionados = new Set(seleccionados)
+    if (newSeleccionados.has(id)) {
+      newSeleccionados.delete(id)
+    } else {
+      newSeleccionados.add(id)
+    }
+    setSeleccionados(newSeleccionados)
+  }
+
+  const handleSelectAll = () => {
+    if (seleccionados.size === productosFiltrados.length) {
+      setSeleccionados(new Set())
+    } else {
+      setSeleccionados(new Set(productosFiltrados.map((p) => p.id)))
+    }
+  }
+
+  const handleDeleteSelected = async () => {
+    if (seleccionados.size === 0) {
+      toast.error('Selecciona al menos un producto')
+      return
+    }
+
+    if (!confirm(`¿Eliminar ${seleccionados.size} productos? Esta acción no se puede deshacer.`))
+      return
+
+    try {
+      for (const id of seleccionados) {
+        await deleteDoc(doc(db, 'productos', id))
+      }
+      setProductos(productos.filter((p) => !seleccionados.has(p.id)))
+      setSeleccionados(new Set())
+      toast.success(`${seleccionados.size} productos eliminados`)
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Error al eliminar productos')
     }
   }
 
@@ -93,12 +134,22 @@ export default function ProductosPage() {
           <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-3xl font-bold text-gray-900">Productos</h1>
-              <Link
-                href="/admin/productos/nuevo"
-                className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-              >
-                + Nuevo Producto
-              </Link>
+              <div className="flex gap-2">
+                {seleccionados.size > 0 && (
+                  <button
+                    onClick={handleDeleteSelected}
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
+                  >
+                    🗑️ Eliminar {seleccionados.size}
+                  </button>
+                )}
+                <Link
+                  href="/admin/productos/nuevo"
+                  className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  + Nuevo Producto
+                </Link>
+              </div>
             </div>
             <p className="text-gray-600">Total: {productosFiltrados.length} de {productos.length} productos</p>
           </div>
@@ -145,6 +196,8 @@ export default function ProductosPage() {
                     <option value="frutas">Frutas</option>
                     <option value="verduras">Verduras</option>
                     <option value="organico">Orgánico</option>
+                    <option value="carnes">Carnes</option>
+                    <option value="embutidos">Embutidos</option>
                     <option value="otro">Otro</option>
                   </select>
                 </div>
@@ -180,6 +233,14 @@ export default function ProductosPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-100">
                     <tr>
+                      <th className="px-4 py-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={seleccionados.size === productosFiltrados.length && productosFiltrados.length > 0}
+                          onChange={handleSelectAll}
+                          className="w-4 h-4 cursor-pointer"
+                        />
+                      </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                         Producto
                       </th>
@@ -208,7 +269,15 @@ export default function ProductosPage() {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {productosFiltrados.map((producto) => (
-                      <tr key={producto.id} className="hover:bg-gray-50">
+                      <tr key={producto.id} className={`hover:bg-gray-50 ${seleccionados.has(producto.id) ? 'bg-blue-50' : ''}`}>
+                        <td className="px-4 py-4 text-center">
+                          <input
+                            type="checkbox"
+                            checked={seleccionados.has(producto.id)}
+                            onChange={() => handleSelectProduct(producto.id)}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                        </td>
                         <td className="px-6 py-4">
                           <div>
                             <p className="font-semibold text-gray-900">{producto.nombre}</p>

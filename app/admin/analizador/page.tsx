@@ -102,11 +102,15 @@ export default function AnalizadorPage() {
   const guardarMargen = async () => {
     try {
       setSaving(true)
-      // Guardar cambio de margen en historial con timestamp
+      // Guardar margen global en config
+      await updateDoc(doc(db, 'config', 'general'), {
+        margen: margenGlobal,
+        margenActualizado: serverTimestamp(),
+      })
+      // También registrar en historial
       await addDoc(collection(db, 'margenHistorico'), {
         margen: margenGlobal,
         timestamp: serverTimestamp(),
-        createdAt: new Date(),
       })
       toast.success(`Margen guardado: ${margenGlobal}%`)
     } catch (error) {

@@ -51,34 +51,22 @@ export default function CuadraturePage() {
       // Valor por defecto del margen (30%)
       const MARGEN_DEFECTO = 0.30
 
-      // Cargar historial de márgenes una sola vez
-      const margenesSnapshot = await getDocs(collection(db, 'margenHistorico'))
-      const margenesPorFecha = margenesSnapshot.docs
-        .map((doc) => {
-          const valor = doc.data().margen
-          // El valor se guarda como número (30), convertir a decimal (0.30)
-          return {
-            margen: typeof valor === 'number' ? valor / 100 : MARGEN_DEFECTO,
-            timestamp: doc.data().timestamp?.toDate?.() || doc.data().createdAt,
-          }
-        })
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-
-      const obtenerMargen = (fecha: Date): number => {
-        // Si no hay registros, usar margen por defecto
-        if (margenesPorFecha.length === 0) {
-          return MARGEN_DEFECTO
+      // Cargar margen global desde config
+      let margenGlobal = MARGEN_DEFECTO
+      try {
+        const configDoc = await getDoc(doc(db, 'config', 'general'))
+        if (configDoc.exists()) {
+          const margenValue = configDoc.data().margen
+          // El margen se guarda como número (30), convertir a decimal (0.30)
+          margenGlobal = typeof margenValue === 'number' ? margenValue / 100 : MARGEN_DEFECTO
+          console.log('Margen cargado desde config:', margenGlobal)
         }
+      } catch (configError) {
+        console.log('Config no encontrado, usando margen por defecto:', MARGEN_DEFECTO)
+      }
 
-        // Buscar el margen vigente en esa fecha
-        for (const margenRecord of margenesPorFecha) {
-          if (new Date(margenRecord.timestamp) <= fecha) {
-            return margenRecord.margen
-          }
-        }
-
-        // Si la fecha es anterior a todos los registros, usar el más antiguo
-        return margenesPorFecha[margenesPorFecha.length - 1].margen
+      const obtenerMargen = (): number => {
+        return margenGlobal
       }
 
       const ordenesSnapshot = await getDocs(collection(db, 'ordenes'))
@@ -121,8 +109,8 @@ export default function CuadraturePage() {
             }
           }
 
-          // Obtener margen vigente en la fecha de esta orden
-          const margenOrden = obtenerMargen(fechaOrden)
+          // Obtener margen vigente
+          const margenOrden = obtenerMargen()
 
           // Calcular costo y venta usando margen histórico
           let costoTotal = 0

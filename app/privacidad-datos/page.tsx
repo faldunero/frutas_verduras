@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
+import { useConfig } from '@/hooks/useConfig'
 import { db } from '@/lib/firebase'
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 
 export default function PrivacidadDatosPage() {
   const { user, isAuthenticated } = useAuth()
+  const { config } = useConfig()
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -41,7 +43,7 @@ export default function PrivacidadDatosPage() {
         email: formData.email,
         tipo: formData.tipo,
         descripcion: formData.descripcion,
-        estado: 'pendiente',
+        estado: config.estados[0], // Use first status from config (pendiente)
         createdAt: serverTimestamp(),
       })
 

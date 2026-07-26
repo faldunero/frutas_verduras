@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { useConfig } from '@/hooks/useConfig'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { FiFilter, FiRefreshCw } from 'react-icons/fi'
@@ -33,7 +34,7 @@ interface Orden {
   createdAt: any
 }
 
-const statusColors: { [key: string]: string } = {
+const DEFAULT_STATUS_COLORS: { [key: string]: string } = {
   pendiente: 'bg-yellow-100 text-yellow-800',
   confirmada: 'bg-blue-100 text-blue-800',
   despachada: 'bg-purple-100 text-purple-800',
@@ -41,7 +42,7 @@ const statusColors: { [key: string]: string } = {
   cancelada: 'bg-red-100 text-red-800',
 }
 
-const statusLabels: { [key: string]: string } = {
+const DEFAULT_STATUS_LABELS: { [key: string]: string } = {
   pendiente: 'Pendiente de Pago',
   confirmada: 'Confirmada',
   despachada: 'Despachada',
@@ -51,6 +52,7 @@ const statusLabels: { [key: string]: string } = {
 
 export default function PedidosPage() {
   const { isAdmin, isAuthenticated } = useAuth()
+  const { config } = useConfig()
   const [ordenes, setOrdenes] = useState<Orden[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('todos')
@@ -58,6 +60,17 @@ export default function PedidosPage() {
   const [fechaHasta, setFechaHasta] = useState<string>('')
   const [busquedaUsuario, setBusquedaUsuario] = useState<string>('')
   const [busquedaOrden, setBusquedaOrden] = useState<string>('')
+
+  // Crear mapeos de colores y etiquetas basados en config
+  const statusColors: { [key: string]: string } = config.estados.reduce((acc, estado) => ({
+    ...acc,
+    [estado]: DEFAULT_STATUS_COLORS[estado] || 'bg-gray-100 text-gray-800',
+  }), {})
+
+  const statusLabels: { [key: string]: string } = config.estados.reduce((acc, estado) => ({
+    ...acc,
+    [estado]: DEFAULT_STATUS_LABELS[estado] || estado.charAt(0).toUpperCase() + estado.slice(1),
+  }), {})
 
   const loadOrdenes = async () => {
     try {
@@ -159,7 +172,7 @@ export default function PedidosPage() {
           <div className="mb-6">
             <h3 className="text-sm font-bold text-gray-700 mb-3">Por estado:</h3>
             <div className="flex flex-wrap gap-2">
-              {['todos', 'pendiente', 'confirmada', 'despachada', 'entregada', 'cancelada'].map(
+              {['todos', ...config.estados].map(
                 (status) => (
                   <button
                     key={status}

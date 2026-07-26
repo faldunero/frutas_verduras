@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
       const ordenDoc = await getDoc(ordenRef)
 
       if (ordenDoc.exists()) {
+        // Update order status to 'confirmada' (matches config.estados[1])
         await updateDoc(ordenRef, {
           estado: 'confirmada',
           referenciaPago: referencia,

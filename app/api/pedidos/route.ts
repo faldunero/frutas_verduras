@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       total,
       direccion,
       telefono,
-      estado: 'pendiente',
+      estado: 'pendiente', // Server-side default - matches config.estados[0]
       fechaCreacion: serverTimestamp(),
     })
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AdminGuard } from '@/components/AdminGuard'
+import { useConfig } from '@/hooks/useConfig'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, deleteDoc, doc, setDoc, updateDoc } from 'firebase/firestore'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
@@ -27,6 +28,7 @@ interface Usuario {
 }
 
 export default function UsuariosPage() {
+  const { config } = useConfig()
   const [usuarios, setUsuarios] = useState<Usuario[]>([])
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
@@ -315,8 +317,11 @@ export default function UsuariosPage() {
                       }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                     >
-                      <option value="user">Cliente</option>
-                      <option value="admin">Administrador</option>
+                      {config.roles.map((role) => (
+                        <option key={role} value={role}>
+                          {role === 'user' ? 'Cliente' : role === 'admin' ? 'Administrador' : role.charAt(0).toUpperCase() + role.slice(1)}
+                        </option>
+                      ))}
                     </select>
                   </div>
 

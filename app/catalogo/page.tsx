@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { db, Producto } from '@/lib/firebase'
 import { collection, getDocs, query, where, onSnapshot } from 'firebase/firestore'
 import { useCart } from '@/hooks/useCart'
+import { useConfig } from '@/hooks/useConfig'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { FiSearch } from 'react-icons/fi'
@@ -16,6 +17,7 @@ const emojis: { [key: string]: string } = {
 }
 
 export default function CatalogoPage() {
+  const { config } = useConfig()
   const [productos, setProductos] = useState<(Producto & { id: string })[]>([])
   const [loading, setLoading] = useState(true)
   const [categoria, setCategoria] = useState<string>('todos')
@@ -157,7 +159,7 @@ export default function CatalogoPage() {
             <div>
               <h3 className="font-bold text-gray-900 mb-3">Categoría</h3>
               <div className="space-y-2">
-                {['todos', 'frutas', 'verduras', 'organico'].map((cat) => (
+                {['todos', ...config.categorias].map((cat) => (
                   <label key={cat} className="flex items-center">
                     <input
                       type="radio"
@@ -168,7 +170,7 @@ export default function CatalogoPage() {
                       className="w-4 h-4 text-green-600"
                     />
                     <span className="ml-2 text-gray-700 capitalize">
-                      {cat === 'todos' ? 'Todos' : cat === 'frutas' ? '🍎 Frutas' : cat === 'verduras' ? '🥬 Verduras' : '🌱 Orgánico'}
+                      {cat === 'todos' ? 'Todos' : `${emojis[cat] || ''} ${cat.charAt(0).toUpperCase() + cat.slice(1)}`}
                     </span>
                   </label>
                 ))}

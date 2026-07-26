@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useConfig } from '@/hooks/useConfig'
 import { db } from '@/lib/firebase'
 import { doc, getDoc, updateDoc, collection, getDocs, query, where } from 'firebase/firestore'
 import toast from 'react-hot-toast'
@@ -26,6 +27,7 @@ interface DatosCompra {
 export default function PerfilPage() {
   const router = useRouter()
   const { user, isAuthenticated, loading: authLoading } = useAuth()
+  const { config } = useConfig()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [datosCompras, setDatosCompras] = useState<DatosCompra[]>([])
@@ -273,11 +275,11 @@ export default function PerfilPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
               >
                 <option value="">Selecciona tu comuna</option>
-                <option value="Las Condes">Las Condes</option>
-                <option value="Providencia">Providencia</option>
-                <option value="Vitacura">Vitacura</option>
-                <option value="Lo Barnechea">Lo Barnechea</option>
-                <option value="Ñuñoa">Ñuñoa</option>
+                {config.comunas.map((comuna) => (
+                  <option key={comuna} value={comuna}>
+                    {comuna}
+                  </option>
+                ))}
               </select>
             </div>
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/hooks/useCart'
 import { useAuth } from '@/hooks/useAuth'
+import { useConfig } from '@/hooks/useConfig'
 import { db } from '@/lib/firebase'
 import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc, increment } from 'firebase/firestore'
 import toast from 'react-hot-toast'
@@ -13,6 +14,7 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { items, getSubtotal, clearCart } = useCart()
   const { user, isAuthenticated } = useAuth()
+  const { config } = useConfig()
   const [loading, setLoading] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -437,11 +439,9 @@ export default function CheckoutPage() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                     >
                       <option value="">Selecciona tu comuna</option>
-                      <option value="Las Condes">Las Condes</option>
-                      <option value="Providencia">Providencia</option>
-                      <option value="Vitacura">Vitacura</option>
-                      <option value="Lo Barnechea">Lo Barnechea</option>
-                      <option value="Ñuñoa">Ñuñoa</option>
+                      {config.comunas.map((comuna) => (
+                        <option key={comuna} value={comuna}>{comuna}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -452,34 +452,44 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-bold mb-4">Método de Pago</h2>
 
                 <div className="space-y-3">
-                  <label className="flex items-center p-3 border border-gray-200 rounded-lg bg-gray-100 cursor-not-allowed opacity-60">
-                    <input
-                      type="radio"
-                      name="metodoPago"
-                      value="transbank"
-                      disabled
-                      className="w-4 h-4 text-gray-400"
-                    />
-                    <span className="ml-3">
-                      <div className="font-medium text-gray-600">💳 Tarjeta de Crédito/Débito (Transbank)</div>
-                      <div className="text-xs text-gray-500">⚠️ En mantenimiento - Disponible pronto</div>
-                    </span>
-                  </label>
+                  {config.metodosPago.map((metodo) => {
+                    const isTransbank = metodo === 'transbank'
+                    const isTransferencia = metodo === 'transferencia'
+                    const formValue = isTransferencia ? 'transfer' : metodo
+                    const isDisabled = isTransbank
 
-                  <label className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="metodoPago"
-                      value="transfer"
-                      checked={formData.metodoPago === 'transfer'}
-                      onChange={handleChange}
-                      className="w-4 h-4 text-green-600"
-                    />
-                    <span className="ml-3">
-                      <div className="font-medium text-gray-900">🏦 Transferencia Bancaria</div>
-                      <div className="text-xs text-gray-500">Deberás confirmar el pago manualmente</div>
-                    </span>
-                  </label>
+                    return (
+                      <label key={metodo} className={`flex items-center p-3 border border-gray-200 rounded-lg ${
+                        isDisabled
+                          ? 'bg-gray-100 cursor-not-allowed opacity-60'
+                          : 'hover:bg-gray-50 cursor-pointer'
+                      }`}>
+                        <input
+                          type="radio"
+                          name="metodoPago"
+                          value={formValue}
+                          disabled={isDisabled}
+                          checked={formData.metodoPago === formValue}
+                          onChange={handleChange}
+                          className={`w-4 h-4 ${isDisabled ? 'text-gray-400' : 'text-green-600'}`}
+                        />
+                        <span className="ml-3">
+                          {isTransbank && (
+                            <>
+                              <div className="font-medium text-gray-600">💳 Tarjeta de Crédito/Débito (Transbank)</div>
+                              <div className="text-xs text-gray-500">⚠️ En mantenimiento - Disponible pronto</div>
+                            </>
+                          )}
+                          {isTransferencia && (
+                            <>
+                              <div className="font-medium text-gray-900">🏦 Transferencia Bancaria</div>
+                              <div className="text-xs text-gray-500">Deberás confirmar el pago manualmente</div>
+                            </>
+                          )}
+                        </span>
+                      </label>
+                    )
+                  })}
                 </div>
               </div>
 

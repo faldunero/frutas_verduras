@@ -57,6 +57,9 @@ export function Header() {
                 <Link href="/admin/solicitudes-arcop" className="hover:text-green-100 transition">
                   ARCOP
                 </Link>
+                <Link href="/admin/configuracion" className="hover:text-green-100 transition">
+                  Configuración
+                </Link>
               </>
             ) : (
               <>
@@ -165,6 +168,9 @@ export function Header() {
               </Link>
               <Link href="/admin/solicitudes-arcop" className="text-sm hover:text-green-100">
                 ARCOP
+              </Link>
+              <Link href="/admin/configuracion" className="text-sm hover:text-green-100">
+                Configuración
               </Link>
             </>
           ) : (

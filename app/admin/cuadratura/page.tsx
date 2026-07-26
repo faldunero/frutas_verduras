@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { AdminGuard } from '@/components/AdminGuard'
 import { useConfig } from '@/hooks/useConfig'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, doc, getDoc, onSnapshot } from 'firebase/firestore'
@@ -225,20 +224,17 @@ export default function CuadraturePage() {
 
   if (loading) {
     return (
-      <AdminGuard>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin text-4xl mb-4">⏳</div>
-            <p className="text-gray-600">Cargando cuadratura...</p>
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin text-4xl mb-4">⏳</div>
+          <p className="text-gray-600">Cargando cuadratura...</p>
         </div>
-      </AdminGuard>
+      </div>
     )
   }
 
   return (
-    <AdminGuard>
-      <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <div className="bg-white shadow">
           <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -387,6 +383,5 @@ export default function CuadraturePage() {
           </div>
         )}
       </div>
-    </AdminGuard>
-  )
-}
+    )
+  }

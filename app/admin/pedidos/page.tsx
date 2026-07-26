@@ -64,12 +64,12 @@ export default function PedidosPage() {
   const [paginaActual, setPaginaActual] = useState(1)
 
   // Crear mapeos de colores y etiquetas basados en config
-  const statusColors: { [key: string]: string } = config.estados.reduce((acc, estado) => ({
+  const statusColors: { [key: string]: string } = (config?.estados || []).reduce((acc, estado) => ({
     ...acc,
     [estado]: DEFAULT_STATUS_COLORS[estado] || 'bg-gray-100 text-gray-800',
   }), {})
 
-  const statusLabels: { [key: string]: string } = config.estados.reduce((acc, estado) => ({
+  const statusLabels: { [key: string]: string } = (config?.estados || []).reduce((acc, estado) => ({
     ...acc,
     [estado]: DEFAULT_STATUS_LABELS[estado] || estado.charAt(0).toUpperCase() + estado.slice(1),
   }), {})
@@ -185,7 +185,7 @@ export default function PedidosPage() {
           <div className="mb-6">
             <h3 className="text-sm font-bold text-gray-700 mb-3">Por estado:</h3>
             <div className="flex flex-wrap gap-2">
-              {['todos', ...config.estados].map(
+              {['todos', ...(config?.estados || [])].map(
                 (status) => (
                   <button
                     key={status}

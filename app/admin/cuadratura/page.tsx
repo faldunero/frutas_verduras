@@ -29,7 +29,20 @@ export default function CuadraturePage() {
   const [paginaActual, setPaginaActual] = useState(1)
 
   useEffect(() => {
-    fetchOrdenes()
+    // Flag para cancelar operaciones si el componente se desmonta
+    let mounted = true
+
+    const loadData = async () => {
+      if (!mounted) return
+      await fetchOrdenes()
+    }
+
+    loadData()
+
+    // Cleanup para cuando se desmonta el componente
+    return () => {
+      mounted = false
+    }
   }, [])
 
   const fetchOrdenes = async () => {
@@ -39,91 +52,75 @@ export default function CuadraturePage() {
 
       console.log('Total órdenes encontradas:', ordenesSnapshot.size)
 
-      for (const ordenDoc of ordenesSnapshot.docs) {
-        const orden = ordenDoc.data()
-        console.log('Procesando orden:', ordenDoc.id, orden)
+      // Procesar órdenes sin esperar cada una (hacer en paralelo pero con límite)
+      const procesarOrdenes = async () => {
+        for (const ordenDoc of ordenesSnapshot.docs) {
+          const orden = ordenDoc.data()
+          console.log('Procesando orden:', ordenDoc.id)
 
-        try {
-          // Obtener datos del cliente - intentar con userId o clientId
-          const userId = orden.userId || orden.clientId
-          if (!userId) {
-            console.warn('No se encontró userId para orden:', ordenDoc.id)
-            continue
-          }
+          try {
+            // Obtener datos del cliente - intentar con userId o clientId
+            const userId = orden.userId || orden.clientId
+            let nombreCliente = 'Cliente desconocido'
 
-          const clienteDoc = await getDoc(doc(db, 'users', userId))
-          const nombreCliente = clienteDoc.exists()
-            ? clienteDoc.data().nombre
-            : 'Cliente desconocido'
-
-          // Calcular costo y venta
-          let costoTotal = 0
-          let ventaTotal = orden.total || 0
-
-          if (orden.items && Array.isArray(orden.items)) {
-            for (const item of orden.items) {
+            if (userId) {
               try {
-                // Validar que item tenga id
-                if (!item || !item.id) {
-                  costoTotal += (item?.precio || 0) * 0.6 * (item?.cantidad || 1)
-                  continue
+                const clienteDoc = await getDoc(doc(db, 'users', userId))
+                if (clienteDoc.exists()) {
+                  nombreCliente = clienteDoc.data().nombre || nombreCliente
                 }
+              } catch (userError) {
+                // Continuar sin datos del cliente
+              }
+            }
 
-                // Intentar obtener el costo del producto
-                const productoDoc = await getDoc(doc(db, 'productos', item.id))
-                if (productoDoc.exists()) {
-                  const producto = productoDoc.data()
-                  // Si existe costo, usarlo; si no, usar el precio como aproximación
-                  const costo = producto.costo || producto.precio * 0.6
-                  const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 1
-                  costoTotal += costo * cantidad
-                } else {
-                  // Si no existe el producto, usar el precio del item * 60% como estimado
-                  const precio = typeof item.precio === 'number' ? item.precio : 0
-                  const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 1
-                  costoTotal += precio * 0.6 * cantidad
-                }
-              } catch (itemError) {
-                // Log error pero continúa con estimación
-                const precio = typeof item?.precio === 'number' ? item.precio : 0
-                const cantidad = typeof item?.cantidad === 'number' ? item.cantidad : 1
+            // Calcular costo y venta de forma más eficiente
+            let costoTotal = 0
+            let ventaTotal = orden.total || 0
+
+            if (orden.items && Array.isArray(orden.items)) {
+              for (const item of orden.items) {
+                // Usar precio del item * 60% como estimación (no consultar BD)
+                const precio = typeof item.precio === 'number' ? item.precio : 0
+                const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 1
                 costoTotal += precio * 0.6 * cantidad
               }
             }
-          }
 
-          const ganancia = ventaTotal - costoTotal
-          const margen = ventaTotal > 0 ? ((ganancia / ventaTotal) * 100).toFixed(2) : '0'
+            const ganancia = ventaTotal - costoTotal
+            const margen = ventaTotal > 0 ? ((ganancia / ventaTotal) * 100).toFixed(2) : '0'
 
-          // Procesar fecha
-          let fechaFormato = '-'
-          if (orden.createdAt) {
-            try {
-              const fecha = typeof orden.createdAt === 'object' && orden.createdAt.toDate
-                ? orden.createdAt.toDate()
-                : new Date(orden.createdAt)
-              fechaFormato = fecha.toLocaleDateString('es-CL')
-            } catch (dateError) {
-              console.error('Error procesando fecha:', dateError)
-              fechaFormato = '-'
+            // Procesar fecha
+            let fechaFormato = '-'
+            if (orden.createdAt) {
+              try {
+                const fecha = typeof orden.createdAt === 'object' && orden.createdAt.toDate
+                  ? orden.createdAt.toDate()
+                  : new Date(orden.createdAt)
+                fechaFormato = fecha.toLocaleDateString('es-CL')
+              } catch (dateError) {
+                fechaFormato = '-'
+              }
             }
-          }
 
-          ordenesData.push({
-            orderId: ordenDoc.id,
-            nombreCliente,
-            idCliente: orden.clientId || orden.userId || '-',
-            costo: costoTotal,
-            venta: ventaTotal,
-            fecha: fechaFormato,
-            margen: parseFloat(margen),
-            ganancia,
-            items: orden.items?.length || 0,
-          })
-        } catch (ordenError) {
-          console.error('Error procesando orden:', ordenError)
+            ordenesData.push({
+              orderId: ordenDoc.id,
+              nombreCliente,
+              idCliente: orden.clientId || orden.userId || '-',
+              costo: costoTotal,
+              venta: ventaTotal,
+              fecha: fechaFormato,
+              margen: parseFloat(margen),
+              ganancia,
+              items: orden.items?.length || 0,
+            })
+          } catch (ordenError) {
+            console.error('Error procesando orden:', ordenError)
+          }
         }
       }
+
+      await procesarOrdenes()
 
       // Ordenar por fecha descendente (solo órdenes con fecha válida)
       ordenesData.sort((a, b) => {

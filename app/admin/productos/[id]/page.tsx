@@ -8,11 +8,13 @@ import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import { useConfig } from '@/hooks/useConfig'
 
 export default function EditarProductoPage() {
   const router = useRouter()
   const params = useParams()
   const productId = params.id as string
+  const { config } = useConfig()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -266,12 +268,11 @@ export default function EditarProductoPage() {
                     onChange={handleChange}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                   >
-                    <option value="frutas">Frutas</option>
-                    <option value="verduras">Verduras</option>
-                    <option value="organico">Orgánico</option>
-                    <option value="carnes">Carnes</option>
-                    <option value="embutidos">Embutidos</option>
-                    <option value="otro">Otro</option>
+                    {config.categorias.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

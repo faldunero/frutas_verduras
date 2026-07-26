@@ -63,20 +63,31 @@ export default function CuadraturePage() {
           if (orden.items && Array.isArray(orden.items)) {
             for (const item of orden.items) {
               try {
+                // Validar que item tenga id
+                if (!item || !item.id) {
+                  costoTotal += (item?.precio || 0) * 0.6 * (item?.cantidad || 1)
+                  continue
+                }
+
                 // Intentar obtener el costo del producto
                 const productoDoc = await getDoc(doc(db, 'productos', item.id))
                 if (productoDoc.exists()) {
                   const producto = productoDoc.data()
                   // Si existe costo, usarlo; si no, usar el precio como aproximación
                   const costo = producto.costo || producto.precio * 0.6
-                  costoTotal += costo * (item.cantidad || 1)
+                  const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 1
+                  costoTotal += costo * cantidad
                 } else {
                   // Si no existe el producto, usar el precio del item * 60% como estimado
-                  costoTotal += (item.precio || 0) * 0.6 * (item.cantidad || 1)
+                  const precio = typeof item.precio === 'number' ? item.precio : 0
+                  const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 1
+                  costoTotal += precio * 0.6 * cantidad
                 }
               } catch (itemError) {
-                console.error('Error procesando item:', itemError)
-                costoTotal += (item.precio || 0) * 0.6 * (item.cantidad || 1)
+                // Log error pero continúa con estimación
+                const precio = typeof item?.precio === 'number' ? item.precio : 0
+                const cantidad = typeof item?.cantidad === 'number' ? item.cantidad : 1
+                costoTotal += precio * 0.6 * cantidad
               }
             }
           }
@@ -150,21 +161,36 @@ export default function CuadraturePage() {
       orden.orderId.toLowerCase().includes(busqueda.toLowerCase())
 
     let coincideFecha = true
-    if (fechaInicio || fechaFin) {
-      const [diaInicio, mesInicio, añoInicio] = fechaInicio.split('/').map(Number)
-      const [diaFin, mesFin, añoFin] = fechaFin.split('/').map(Number)
-      const [diaOrden, mesOrden, añoOrden] = orden.fecha.split('/').map(Number)
+    if ((fechaInicio || fechaFin) && orden.fecha && orden.fecha !== '-') {
+      try {
+        const inicioMatch = fechaInicio.match(/(\d+)\/(\d+)\/(\d+)/)
+        const finMatch = fechaFin.match(/(\d+)\/(\d+)\/(\d+)/)
+        const ordenMatch = orden.fecha.match(/(\d+)\/(\d+)\/(\d+)/)
 
-      if (fechaInicio) {
-        const inicio = new Date(añoInicio || 1970, (mesInicio || 1) - 1, diaInicio || 1)
-        const ordenDate = new Date(añoOrden || 1970, (mesOrden || 1) - 1, diaOrden || 1)
-        if (ordenDate < inicio) coincideFecha = false
-      }
+        if (inicioMatch) {
+          const [, diaInicio, mesInicio, añoInicio] = inicioMatch
+          const inicio = new Date(parseInt(añoInicio), parseInt(mesInicio) - 1, parseInt(diaInicio))
 
-      if (fechaFin) {
-        const fin = new Date(añoFin || 2099, (mesFin || 12) - 1, diaFin || 31)
-        const ordenDate = new Date(añoOrden || 1970, (mesOrden || 1) - 1, diaOrden || 1)
-        if (ordenDate > fin) coincideFecha = false
+          if (ordenMatch) {
+            const [, diaOrden, mesOrden, añoOrden] = ordenMatch
+            const ordenDate = new Date(parseInt(añoOrden), parseInt(mesOrden) - 1, parseInt(diaOrden))
+            if (ordenDate < inicio) coincideFecha = false
+          }
+        }
+
+        if (finMatch && coincideFecha) {
+          const [, diaFin, mesFin, añoFin] = finMatch
+          const fin = new Date(parseInt(añoFin), parseInt(mesFin) - 1, parseInt(diaFin))
+
+          if (ordenMatch) {
+            const [, diaOrden, mesOrden, añoOrden] = ordenMatch
+            const ordenDate = new Date(parseInt(añoOrden), parseInt(mesOrden) - 1, parseInt(diaOrden))
+            if (ordenDate > fin) coincideFecha = false
+          }
+        }
+      } catch (dateFilterError) {
+        // Si hay error en el filtro de fecha, mostrar la orden
+        coincideFecha = true
       }
     }
 

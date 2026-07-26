@@ -65,6 +65,8 @@ export async function POST(request: NextRequest) {
 
     const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 
+    console.log('Sending verification email:', { fromEmail, to: email, verificationUrl })
+
     const emailResponse = await resend.emails.send({
       from: fromEmail,
       to: email,
@@ -111,10 +113,12 @@ export async function POST(request: NextRequest) {
       `,
     })
 
+    console.log('Resend response:', emailResponse)
+
     if (emailResponse.error) {
       console.error('Error sending verification email:', emailResponse.error)
       return NextResponse.json(
-        { error: 'Error al enviar email de verificación' },
+        { error: `Error al enviar email: ${JSON.stringify(emailResponse.error)}` },
         { status: 500 }
       )
     }

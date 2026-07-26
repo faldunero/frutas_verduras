@@ -28,8 +28,8 @@ export default function CuadraturePage() {
   const [fechaInicio, setFechaInicio] = useState('')
   const [fechaFin, setFechaFin] = useState('')
   const [totales, setTotales] = useState({ costo: 0, venta: 0, ganancia: 0 })
-  const [itemsPorPagina, setItemsPorPagina] = useState(20)
-  const [paginaActual, setPaginaActual] = useState(1)
+  const [itemsPorPagina] = useState(100)
+  const [paginaActual] = useState(1)
 
   useEffect(() => {
     // Indicar que el componente está montado
@@ -218,14 +218,10 @@ export default function CuadraturePage() {
       venta: totalVenta,
       ganancia: totalGanancia,
     })
-    setPaginaActual(1) // Reset paginación al filtrar
   }, [ordenesFiltradas])
 
-  // Paginación
-  const totalPaginas = Math.ceil(ordenesFiltradas.length / itemsPorPagina)
-  const inicio = (paginaActual - 1) * itemsPorPagina
-  const fin = inicio + itemsPorPagina
-  const ordenesPaginadas = ordenesFiltradas.slice(inicio, fin)
+  // Mostrar todas las órdenes (sin paginación)
+  const ordenesPaginadas = ordenesFiltradas
 
   if (loading) {
     return (
@@ -380,21 +376,6 @@ export default function CuadraturePage() {
               </table>
             </div>
 
-            {/* Paginación */}
-            {ordenesFiltradas.length > itemsPorPagina && (
-              <div className="mt-6 flex justify-between items-center bg-white rounded-lg shadow p-4">
-                <span className="text-sm text-gray-600">
-                  Mostrando {inicio + 1}-{Math.min(fin, ordenesFiltradas.length)} de {ordenesFiltradas.length}
-                </span>
-                <div className="flex gap-2">
-                  <button type="button" onClick={() => setPaginaActual(Math.max(1, paginaActual - 1))} disabled={paginaActual === 1}
-                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed rounded-lg font-medium">← Anterior</button>
-                  <span className="px-4 py-2 text-sm font-medium">Pág {paginaActual} de {totalPaginas}</span>
-                  <button type="button" onClick={() => setPaginaActual(Math.min(totalPaginas, paginaActual + 1))} disabled={paginaActual === totalPaginas}
-                    className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed rounded-lg font-medium">Siguiente →</button>
-                </div>
-              </div>
-            )}
           </div>
         )}
 

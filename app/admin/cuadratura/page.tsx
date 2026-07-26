@@ -348,7 +348,54 @@ export default function CuadraturePage() {
           </div>
         )}
 
-        {/* NO MOSTRAR TABLA - Solo totales y filtros */}
+        {/* Tabla de órdenes */}
+        {!loading && ordenes.length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <div className="bg-white rounded-lg shadow overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Orden</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Costo</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Venta</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Ganancia</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">Margen %</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Fecha</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {ordenesPaginadas.map((orden) => (
+                    <tr key={orden.orderId} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm font-mono text-gray-900">{orden.orderId.slice(0, 8)}</td>
+                      <td className="px-6 py-4 text-right text-sm text-red-600">${orden.costo.toLocaleString('es-CL', { maximumFractionDigits: 0 })}</td>
+                      <td className="px-6 py-4 text-right text-sm text-blue-600">${orden.venta.toLocaleString('es-CL', { maximumFractionDigits: 0 })}</td>
+                      <td className="px-6 py-4 text-right text-sm font-medium">${orden.ganancia.toLocaleString('es-CL', { maximumFractionDigits: 0 })}</td>
+                      <td className="px-6 py-4 text-right text-sm font-medium">{orden.margen.toFixed(2)}%</td>
+                      <td className="px-6 py-4 text-sm text-gray-600">{orden.fecha}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Paginación */}
+            {ordenesFiltradas.length > itemsPorPagina && (
+              <div className="mt-6 flex justify-between items-center bg-white rounded-lg shadow p-4">
+                <span className="text-sm text-gray-600">
+                  Mostrando {inicio + 1}-{Math.min(fin, ordenesFiltradas.length)} de {ordenesFiltradas.length}
+                </span>
+                <div className="flex gap-2">
+                  <button onClick={() => setPaginaActual(Math.max(1, paginaActual - 1))} disabled={paginaActual === 1}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded-lg">← Anterior</button>
+                  <span className="px-4 py-2 text-sm font-medium">Pág {paginaActual} de {totalPaginas}</span>
+                  <button onClick={() => setPaginaActual(Math.min(totalPaginas, paginaActual + 1))} disabled={paginaActual === totalPaginas}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded-lg">Siguiente →</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {!loading && ordenes.length === 0 && (
           <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
             <div className="text-center py-12 bg-white rounded-lg">

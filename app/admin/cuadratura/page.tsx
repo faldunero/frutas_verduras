@@ -22,7 +22,11 @@ export default function CuadraturePage() {
   const [ordenes, setOrdenes] = useState<OrdenAnalisis[]>([])
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
+  const [fechaInicio, setFechaInicio] = useState('')
+  const [fechaFin, setFechaFin] = useState('')
   const [totales, setTotales] = useState({ costo: 0, venta: 0, ganancia: 0 })
+  const [itemsPorPagina, setItemsPorPagina] = useState(20)
+  const [paginaActual, setPaginaActual] = useState(1)
 
   useEffect(() => {
     fetchOrdenes()
@@ -144,8 +148,48 @@ export default function CuadraturePage() {
       orden.nombreCliente.toLowerCase().includes(busqueda.toLowerCase()) ||
       orden.idCliente.toLowerCase().includes(busqueda.toLowerCase()) ||
       orden.orderId.toLowerCase().includes(busqueda.toLowerCase())
-    return coincideBusqueda
+
+    let coincideFecha = true
+    if (fechaInicio || fechaFin) {
+      const [diaInicio, mesInicio, añoInicio] = fechaInicio.split('/').map(Number)
+      const [diaFin, mesFin, añoFin] = fechaFin.split('/').map(Number)
+      const [diaOrden, mesOrden, añoOrden] = orden.fecha.split('/').map(Number)
+
+      if (fechaInicio) {
+        const inicio = new Date(añoInicio || 1970, (mesInicio || 1) - 1, diaInicio || 1)
+        const ordenDate = new Date(añoOrden || 1970, (mesOrden || 1) - 1, diaOrden || 1)
+        if (ordenDate < inicio) coincideFecha = false
+      }
+
+      if (fechaFin) {
+        const fin = new Date(añoFin || 2099, (mesFin || 12) - 1, diaFin || 31)
+        const ordenDate = new Date(añoOrden || 1970, (mesOrden || 1) - 1, diaOrden || 1)
+        if (ordenDate > fin) coincideFecha = false
+      }
+    }
+
+    return coincideBusqueda && coincideFecha
   })
+
+  // Recalcular totales según filtros
+  useEffect(() => {
+    const totalCosto = ordenesFiltradas.reduce((sum, o) => sum + o.costo, 0)
+    const totalVenta = ordenesFiltradas.reduce((sum, o) => sum + o.venta, 0)
+    const totalGanancia = ordenesFiltradas.reduce((sum, o) => sum + o.ganancia, 0)
+
+    setTotales({
+      costo: totalCosto,
+      venta: totalVenta,
+      ganancia: totalGanancia,
+    })
+    setPaginaActual(1) // Reset paginación al filtrar
+  }, [ordenesFiltradas])
+
+  // Paginación
+  const totalPaginas = Math.ceil(ordenesFiltradas.length / itemsPorPagina)
+  const inicio = (paginaActual - 1) * itemsPorPagina
+  const fin = inicio + itemsPorPagina
+  const ordenesPaginadas = ordenesFiltradas.slice(inicio, fin)
 
   if (loading) {
     return (
@@ -199,17 +243,71 @@ export default function CuadraturePage() {
           </div>
         </div>
 
-        {/* Filtro */}
+        {/* Filtros */}
         {ordenes.length > 0 && (
           <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-            <div className="bg-white rounded-lg shadow p-4">
-              <input
-                type="text"
-                placeholder="Buscar por nombre, ID cliente u orden..."
-                value={busqueda}
-                onChange={(e) => setBusqueda(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-              />
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtros</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Búsqueda */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Búsqueda
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Nombre, ID o Orden..."
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                  />
+                </div>
+
+                {/* Fecha Inicio */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Desde
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="DD/MM/YYYY"
+                    value={fechaInicio}
+                    onChange={(e) => setFechaInicio(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                  />
+                </div>
+
+                {/* Fecha Fin */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Hasta
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="DD/MM/YYYY"
+                    value={fechaFin}
+                    onChange={(e) => setFechaFin(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                  />
+                </div>
+
+                {/* Limpiar Filtros */}
+                <div className="flex items-end">
+                  <button
+                    onClick={() => {
+                      setBusqueda('')
+                      setFechaInicio('')
+                      setFechaFin('')
+                    }}
+                    className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition"
+                  >
+                    🔄 Limpiar
+                  </button>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                Mostrando {ordenesFiltradas.length} de {ordenes.length} órdenes
+              </p>
             </div>
           </div>
         )}
@@ -219,83 +317,127 @@ export default function CuadraturePage() {
           <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
             {ordenesFiltradas.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-lg">
-                <p className="text-gray-600 text-lg">No hay órdenes que coincidan con la búsqueda</p>
+                <p className="text-gray-600 text-lg">No hay órdenes que coincidan con los filtros</p>
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                        Orden ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                        Cliente
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                        ID Cliente
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">
-                        Costo
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">
-                        Venta
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">
-                        Ganancia
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">
-                        Margen %
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
-                        Fecha
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {ordenesFiltradas.map((orden) => (
-                      <tr key={orden.orderId} className="hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <span className="text-sm font-mono text-gray-900">{orden.orderId.slice(0, 8)}</span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{orden.nombreCliente}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{orden.idCliente}</td>
-                        <td className="px-6 py-4 text-right text-sm text-red-600 font-medium">
-                          ${orden.costo.toLocaleString('es-CL', { maximumFractionDigits: 0 })}
-                        </td>
-                        <td className="px-6 py-4 text-right text-sm text-blue-600 font-medium">
-                          ${orden.venta.toLocaleString('es-CL', { maximumFractionDigits: 0 })}
-                        </td>
-                        <td className="px-6 py-4 text-right text-sm font-medium">
-                          <span
-                            className={`px-3 py-1 rounded ${
-                              orden.ganancia > 0
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            ${orden.ganancia.toLocaleString('es-CL', { maximumFractionDigits: 0 })}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right text-sm font-medium">
-                          <span
-                            className={`px-3 py-1 rounded ${
-                              orden.margen > 20
-                                ? 'bg-green-100 text-green-800'
-                                : orden.margen > 10
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {orden.margen.toFixed(2)}%
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{orden.fecha}</td>
+              <>
+                <div className="bg-white rounded-lg shadow overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                          Orden ID
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                          Cliente
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                          ID Cliente
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                          Costo
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                          Venta
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                          Ganancia
+                        </th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase">
+                          Margen %
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+                          Fecha
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {ordenesPaginadas.map((orden) => (
+                        <tr key={orden.orderId} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-mono text-gray-900">{orden.orderId.slice(0, 8)}</span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{orden.nombreCliente}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{orden.idCliente}</td>
+                          <td className="px-6 py-4 text-right text-sm text-red-600 font-medium">
+                            ${orden.costo.toLocaleString('es-CL', { maximumFractionDigits: 0 })}
+                          </td>
+                          <td className="px-6 py-4 text-right text-sm text-blue-600 font-medium">
+                            ${orden.venta.toLocaleString('es-CL', { maximumFractionDigits: 0 })}
+                          </td>
+                          <td className="px-6 py-4 text-right text-sm font-medium">
+                            <span
+                              className={`px-3 py-1 rounded ${
+                                orden.ganancia > 0
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              ${orden.ganancia.toLocaleString('es-CL', { maximumFractionDigits: 0 })}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right text-sm font-medium">
+                            <span
+                              className={`px-3 py-1 rounded ${
+                                orden.margen > 20
+                                  ? 'bg-green-100 text-green-800'
+                                  : orden.margen > 10
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {orden.margen.toFixed(2)}%
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">{orden.fecha}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Paginación */}
+                <div className="mt-6 flex flex-col sm:flex-row justify-between items-center bg-white rounded-lg shadow p-4 gap-4">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-gray-600">
+                      Mostrando {inicio + 1}-{Math.min(fin, ordenesFiltradas.length)} de{' '}
+                      {ordenesFiltradas.length} órdenes
+                    </span>
+                    <select
+                      value={itemsPorPagina}
+                      onChange={(e) => {
+                        setItemsPorPagina(Number(e.target.value))
+                        setPaginaActual(1)
+                      }}
+                      className="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 text-sm"
+                    >
+                      <option value={20}>20 por página</option>
+                      <option value={40}>40 por página</option>
+                      <option value={100}>100 por página</option>
+                    </select>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setPaginaActual(Math.max(1, paginaActual - 1))}
+                      disabled={paginaActual === 1}
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg font-medium transition"
+                    >
+                      ← Anterior
+                    </button>
+                    <span className="px-4 py-2 text-sm font-medium text-gray-700">
+                      Página {paginaActual} de {totalPaginas}
+                    </span>
+                    <button
+                      onClick={() => setPaginaActual(Math.min(totalPaginas, paginaActual + 1))}
+                      disabled={paginaActual === totalPaginas}
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded-lg font-medium transition"
+                    >
+                      Siguiente →
+                    </button>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         )}

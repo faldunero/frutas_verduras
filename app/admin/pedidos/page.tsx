@@ -52,7 +52,7 @@ const DEFAULT_STATUS_LABELS: { [key: string]: string } = {
 
 export default function PedidosPage() {
   const { isAdmin, isAuthenticated } = useAuth()
-  const { config = { estados: [] } } = useConfig()
+  const { config, loading: configLoading } = useConfig()
   const [ordenes, setOrdenes] = useState<Orden[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('todos')
@@ -63,13 +63,16 @@ export default function PedidosPage() {
   const [itemsPorPagina, setItemsPorPagina] = useState(20)
   const [paginaActual, setPaginaActual] = useState(1)
 
+  // Usar estados del config, con fallback a los defaults
+  const estados = config?.estados || Object.keys(DEFAULT_STATUS_LABELS)
+
   // Crear mapeos de colores y etiquetas basados en config
-  const statusColors: { [key: string]: string } = (config?.estados || []).reduce((acc, estado) => ({
+  const statusColors: { [key: string]: string } = estados.reduce((acc, estado) => ({
     ...acc,
     [estado]: DEFAULT_STATUS_COLORS[estado] || 'bg-gray-100 text-gray-800',
   }), {})
 
-  const statusLabels: { [key: string]: string } = (config?.estados || []).reduce((acc, estado) => ({
+  const statusLabels: { [key: string]: string } = estados.reduce((acc, estado) => ({
     ...acc,
     [estado]: DEFAULT_STATUS_LABELS[estado] || estado.charAt(0).toUpperCase() + estado.slice(1),
   }), {})
@@ -185,7 +188,7 @@ export default function PedidosPage() {
           <div className="mb-6">
             <h3 className="text-sm font-bold text-gray-700 mb-3">Por estado:</h3>
             <div className="flex flex-wrap gap-2">
-              {['todos', ...(config?.estados || [])].map(
+              {['todos', ...estados].map(
                 (status) => (
                   <button
                     key={status}

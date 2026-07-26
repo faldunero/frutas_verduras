@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AdminGuard } from '@/components/AdminGuard'
 import { useConfig } from '@/hooks/useConfig'
 import { db } from '@/lib/firebase'
@@ -21,6 +21,7 @@ interface OrdenAnalisis {
 
 export default function CuadraturePage() {
   const { config = {} } = useConfig()
+  const isMountedRef = useRef(true)
   const [ordenes, setOrdenes] = useState<OrdenAnalisis[]>([])
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
@@ -31,25 +32,17 @@ export default function CuadraturePage() {
   const [paginaActual, setPaginaActual] = useState(1)
 
   useEffect(() => {
-    // AbortController para cancelar promesas si se navega
-    const controller = new AbortController()
+    // Indicar que el componente está montado
+    isMountedRef.current = true
 
-    const loadData = async () => {
-      try {
-        await fetchOrdenes()
-      } catch (error) {
-        // Ignorar errores de abort
-        if (error instanceof Error && error.name !== 'AbortError') {
-          console.error('Error cargando órdenes:', error)
-        }
-      }
+    // Cargar órdenes solo si el componente está montado
+    if (isMountedRef.current) {
+      fetchOrdenes()
     }
 
-    loadData()
-
-    // Cleanup: cancelar todas las promesas pendientes
+    // Cleanup: marcar como desmontado para prevenir memory leaks
     return () => {
-      controller.abort()
+      isMountedRef.current = false
     }
   }, [])
 
@@ -156,6 +149,10 @@ export default function CuadraturePage() {
       })
 
       console.log('Órdenes procesadas exitosamente:', ordenesData.length)
+
+      // Solo actualizar estado si el componente sigue montado
+      if (!isMountedRef.current) return
+
       setOrdenes(ordenesData)
 
       // Calcular totales
@@ -170,9 +167,13 @@ export default function CuadraturePage() {
       })
     } catch (error) {
       console.error('Error cargando órdenes:', error)
-      toast.error(`Error al cargar órdenes: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+      if (isMountedRef.current) {
+        toast.error(`Error al cargar órdenes: ${error instanceof Error ? error.message : 'Error desconocido'}`)
+      }
     } finally {
-      setLoading(false)
+      if (isMountedRef.current) {
+        setLoading(false)
+      }
     }
   }
 

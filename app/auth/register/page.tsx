@@ -1,16 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3'
 
-function RegisterForm() {
+export default function RegisterPage() {
   const [email, setEmail] = useState('')
   const [nombre, setNombre] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const { executeRecaptcha } = useGoogleReCaptcha()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,21 +21,11 @@ function RegisterForm() {
     setLoading(true)
 
     try {
-      // Ejecutar reCAPTCHA
-      if (!executeRecaptcha) {
-        throw new Error('reCAPTCHA no está disponible')
-      }
-
-      const recaptchaToken = await executeRecaptcha('register')
-
       // Enviar email de verificación
       const response = await fetch('/api/send-verification-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          recaptchaToken,
-        }),
+        body: JSON.stringify({ email }),
       })
 
       const data = await response.json()
@@ -154,23 +142,5 @@ function RegisterForm() {
         </p>
       </div>
     </div>
-  )
-}
-
-export default function RegisterPage() {
-  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
-
-  if (!siteKey) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-red-600">Error: reCAPTCHA no está configurado</p>
-      </div>
-    )
-  }
-
-  return (
-    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
-      <RegisterForm />
-    </GoogleReCaptchaProvider>
   )
 }

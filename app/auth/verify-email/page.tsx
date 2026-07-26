@@ -1,268 +1,136 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
-import { COMUNAS_PERMITIDAS } from '@/lib/constants'
+import { db } from '@/lib/firebase'
+import { doc, getDoc, updateDoc, setDoc } from 'firebase/firestore'
 
-function VerifyEmailContent() {
+export default function VerifyEmailPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [verified, setVerified] = useState(false)
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [nombre, setNombre] = useState('')
-  const [telefono, setTelefono] = useState('')
-  const [comuna, setComuna] = useState('')
-  const [direccion, setDireccion] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-
-  const token = searchParams.get('token')
-  const email = searchParams.get('email')
+  const [error, setError] = useState<string | null>(null)
+  const [email, setEmail] = useState('')
 
   useEffect(() => {
-    if (!token || !email) {
-      toast.error('Link de verificación inválido')
-      router.push('/auth/register')
-    } else {
-      setLoading(false)
-    }
-  }, [token, email, router])
+    const verifyToken = async () => {
+      try {
+        const token = searchParams.get('token')
+        const emailParam = searchParams.get('email')
 
-  const handleVerifyAndCreateAccount = async (e: React.FormEvent) => {
-    e.preventDefault()
+        if (!token || !emailParam) {
+          throw new Error('Token o email no proporcionados')
+        }
 
-    if (!password || !nombre || !confirmPassword || !telefono || !comuna || !direccion) {
-      toast.error('Completa todos los campos')
-      return
-    }
+        setEmail(decodeURIComponent(emailParam))
 
-    if (password !== confirmPassword) {
-      toast.error('Las contraseñas no coinciden')
-      return
-    }
+        const verificationRef = doc(db, 'emailVerifications', emailParam)
+        const verificationDoc = await getDoc(verificationRef)
 
-    const validation = validatePassword(password)
-    if (!validation.valid) {
-      toast.error(validation.errors[0])
-      return
-    }
+        if (!verificationDoc.exists()) {
+          throw new Error('Token de verificación no encontrado')
+        }
 
-    setSubmitting(true)
+        const verificationData = verificationDoc.data()
 
-    try {
-      const response = await fetch('/api/verify-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token,
-          email,
-          password,
-          nombre,
-          telefono,
-          comuna,
-          direccion,
-        }),
-      })
+        if (verificationData.token !== token) {
+          throw new Error('Token inválido')
+        }
 
-      const data = await response.json()
+        const expiresAt = verificationData.expiresAt?.toDate?.() || new Date(verificationData.expiresAt)
+        if (new Date() > expiresAt) {
+          throw new Error('Token expirado. Solicita un nuevo email de verificación.')
+        }
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al verificar email')
+        await updateDoc(verificationRef, {
+          verified: true,
+          verifiedAt: new Date(),
+        })
+
+        const userRef = doc(db, 'users', emailParam)
+        const userDoc = await getDoc(userRef)
+
+        if (!userDoc.exists()) {
+          await setDoc(userRef, {
+            email: emailParam,
+            emailVerified: true,
+            role: 'usuario',
+            createdAt: new Date(),
+            status: 'pending_password',
+          })
+        } else {
+          await updateDoc(userRef, {
+            emailVerified: true,
+            status: 'pending_password',
+          })
+        }
+
+        setVerified(true)
+        toast.success('Email verificado correctamente')
+
+        setTimeout(() => {
+          router.push(`/auth/set-password?email=${encodeURIComponent(emailParam)}`)
+        }, 2000)
+      } catch (err: any) {
+        console.error('Error verifying email:', err)
+        setError(err.message || 'Error al verificar email')
+        toast.error(err.message || 'Error al verificar email')
+      } finally {
+        setLoading(false)
       }
-
-      toast.success('¡Cuenta creada exitosamente!')
-      setTimeout(() => {
-        router.push('/auth/login')
-      }, 2000)
-    } catch (error: any) {
-      console.error('Error:', error)
-      toast.error(error.message || 'Error al crear la cuenta')
-    } finally {
-      setSubmitting(false)
     }
-  }
+
+    verifyToken()
+  }, [searchParams, router])
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center px-4">
+        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
           <div className="animate-spin text-4xl mb-4">⏳</div>
-          <p className="text-gray-600">Cargando...</p>
+          <p className="text-gray-600">Verificando tu email...</p>
         </div>
       </div>
     )
   }
 
-  const validatePassword = (pwd: string): { valid: boolean; errors: string[] } => {
-    const errors: string[] = []
-    if (pwd.length < 8) errors.push('Mínimo 8 caracteres')
-    if (!/[A-Z]/.test(pwd)) errors.push('Al menos 1 mayúscula')
-    if (!/\d/.test(pwd)) errors.push('Al menos 1 número')
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) errors.push('Al menos 1 carácter especial')
-    return { valid: errors.length === 0, errors }
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-md mx-auto px-4">
-        <div className="bg-white rounded-lg shadow p-8">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">✅</div>
-            <h1 className="text-2xl font-bold mb-2">¡Email Verificado!</h1>
-            <p className="text-gray-600">Completa tu registro para continuar</p>
-          </div>
-
-          <form onSubmit={handleVerifyAndCreateAccount} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                value={email || ''}
-                disabled
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre Completo *
-              </label>
-              <input
-                type="text"
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-                placeholder="Tu nombre"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Teléfono *
-              </label>
-              <input
-                type="tel"
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                placeholder="Ej: +56912345678"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Comuna *
-              </label>
-              <select
-                value={comuna}
-                onChange={(e) => setComuna(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                required
-              >
-                <option value="">Selecciona tu comuna</option>
-                {COMUNAS_PERMITIDAS.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Dirección *
-              </label>
-              <input
-                type="text"
-                value={direccion}
-                onChange={(e) => setDireccion(e.target.value)}
-                placeholder="Tu dirección completa"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña *
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 8 caracteres, mayúscula, número y carácter especial"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                required
-              />
-              {password && (
-                <div className="mt-2">
-                  {validatePassword(password).errors.map((error, i) => (
-                    <p key={i} className="text-xs text-red-600">✗ {error}</p>
-                  ))}
-                  {validatePassword(password).valid && (
-                    <p className="text-xs text-green-600">✓ Contraseña válida</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirmar Contraseña *
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Repite tu contraseña"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                required
-              />
-              {confirmPassword && (
-                <p className={`text-xs mt-1 ${password === confirmPassword ? 'text-green-600' : 'text-red-600'}`}>
-                  {password === confirmPassword ? '✓ Coinciden' : '✗ No coinciden'}
-                </p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition"
-            >
-              {submitting ? 'Creando cuenta...' : 'Crear Cuenta'}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              ¿Ya tienes cuenta?{' '}
-              <Link href="/auth/login" className="text-green-600 hover:text-green-700 font-medium">
-                Inicia sesión
-              </Link>
-            </p>
-          </div>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center px-4">
+        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
+          <div className="text-6xl mb-4">❌</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error de Verificación</h1>
+          <p className="text-gray-600 mb-6">{error}</p>
+          <Link
+            href="/auth/register"
+            className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg"
+          >
+            Volver a Registrarse
+          </Link>
         </div>
       </div>
-    </div>
-  )
-}
+    )
+  }
 
-export default function VerifyEmailPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p>Cargando...</p>
+  if (verified) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center px-4">
+        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
+          <div className="text-6xl mb-4">✅</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Email Verificado</h1>
+          <p className="text-gray-600 mb-2">
+            Tu email <strong>{email}</strong> ha sido verificado correctamente.
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            Redirigiendo a crear contraseña...
+          </p>
+        </div>
       </div>
-    }>
-      <VerifyEmailContent />
-    </Suspense>
-  )
+    )
+  }
+
+  return null
 }

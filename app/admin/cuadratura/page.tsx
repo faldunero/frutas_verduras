@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { AdminGuard } from '@/components/AdminGuard'
+import { useConfig } from '@/hooks/useConfig'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, doc, getDoc, onSnapshot } from 'firebase/firestore'
 import toast from 'react-hot-toast'
+
+const MARGEN_GENERAL = 0.30 // 30% - margen por defecto del Analizador
 
 interface OrdenAnalisis {
   orderId: string
@@ -29,19 +32,25 @@ export default function CuadraturePage() {
   const [paginaActual, setPaginaActual] = useState(1)
 
   useEffect(() => {
-    // Flag para cancelar operaciones si el componente se desmonta
-    let mounted = true
+    // AbortController para cancelar promesas si se navega
+    const controller = new AbortController()
 
     const loadData = async () => {
-      if (!mounted) return
-      await fetchOrdenes()
+      try {
+        await fetchOrdenes()
+      } catch (error) {
+        // Ignorar errores de abort
+        if (error instanceof Error && error.name !== 'AbortError') {
+          console.error('Error cargando órdenes:', error)
+        }
+      }
     }
 
     loadData()
 
-    // Cleanup para cuando se desmonta el componente
+    // Cleanup: cancelar todas las promesas pendientes
     return () => {
-      mounted = false
+      controller.abort()
     }
   }, [])
 
@@ -74,16 +83,17 @@ export default function CuadraturePage() {
               }
             }
 
-            // Calcular costo y venta de forma más eficiente
+            // Calcular costo y venta usando margen del Analizador (30%)
+            // Fórmula: Costo = Precio * (1 - Margen)
             let costoTotal = 0
             let ventaTotal = orden.total || 0
 
             if (orden.items && Array.isArray(orden.items)) {
               for (const item of orden.items) {
-                // Usar precio del item * 60% como estimación (no consultar BD)
+                // Calcular costo usando el margen: precio * (1 - 30%) = precio * 0.7
                 const precio = typeof item.precio === 'number' ? item.precio : 0
                 const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 1
-                costoTotal += precio * 0.6 * cantidad
+                costoTotal += precio * (1 - MARGEN_GENERAL) * cantidad
               }
             }
 

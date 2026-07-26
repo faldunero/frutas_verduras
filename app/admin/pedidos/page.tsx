@@ -52,7 +52,7 @@ const DEFAULT_STATUS_LABELS: { [key: string]: string } = {
 
 export default function PedidosPage() {
   const { isAdmin, isAuthenticated } = useAuth()
-  const { config } = useConfig()
+  const { config = { estados: [] } } = useConfig()
   const [ordenes, setOrdenes] = useState<Orden[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('todos')

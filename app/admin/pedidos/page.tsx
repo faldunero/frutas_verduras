@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { useConfig } from '@/hooks/useConfig'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { FiFilter, FiRefreshCw } from 'react-icons/fi'
@@ -98,8 +97,11 @@ export default function PedidosPage() {
   }
 
   useEffect(() => {
-    loadOrdenes()
-  }, [])
+    // Solo cargar si es admin
+    if (isAuthenticated && isAdmin) {
+      loadOrdenes()
+    }
+  }, [isAuthenticated, isAdmin])
 
   if (!isAuthenticated || !isAdmin) {
     return (

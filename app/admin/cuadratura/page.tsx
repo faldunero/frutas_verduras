@@ -36,52 +36,74 @@ export default function CuadraturePage() {
       for (const ordenDoc of ordenesSnapshot.docs) {
         const orden = ordenDoc.data()
 
-        // Obtener datos del cliente
-        const clienteDoc = await getDoc(doc(db, 'users', orden.userId))
-        const nombreCliente = clienteDoc.exists()
-          ? clienteDoc.data().nombre
-          : 'Cliente desconocido'
+        try {
+          // Obtener datos del cliente
+          const clienteDoc = await getDoc(doc(db, 'users', orden.userId))
+          const nombreCliente = clienteDoc.exists()
+            ? clienteDoc.data().nombre
+            : 'Cliente desconocido'
 
-        // Calcular costo y venta
-        let costoTotal = 0
-        let ventaTotal = orden.total || 0
+          // Calcular costo y venta
+          let costoTotal = 0
+          let ventaTotal = orden.total || 0
 
-        if (orden.items && Array.isArray(orden.items)) {
-          for (const item of orden.items) {
-            // Intentar obtener el costo del producto
-            const productoDoc = await getDoc(doc(db, 'productos', item.id))
-            if (productoDoc.exists()) {
-              const producto = productoDoc.data()
-              // Si existe costo, usarlo; si no, usar el precio como aproximación
-              const costo = producto.costo || producto.precio * 0.6 // Asumir 40% de margen por defecto
-              costoTotal += costo * (item.cantidad || 1)
-            } else {
-              // Si no existe el producto, usar el precio del item * 60% como estimado
-              costoTotal += (item.precio || 0) * 0.6 * (item.cantidad || 1)
+          if (orden.items && Array.isArray(orden.items)) {
+            for (const item of orden.items) {
+              try {
+                // Intentar obtener el costo del producto
+                const productoDoc = await getDoc(doc(db, 'productos', item.id))
+                if (productoDoc.exists()) {
+                  const producto = productoDoc.data()
+                  // Si existe costo, usarlo; si no, usar el precio como aproximación
+                  const costo = producto.costo || producto.precio * 0.6
+                  costoTotal += costo * (item.cantidad || 1)
+                } else {
+                  // Si no existe el producto, usar el precio del item * 60% como estimado
+                  costoTotal += (item.precio || 0) * 0.6 * (item.cantidad || 1)
+                }
+              } catch (itemError) {
+                console.error('Error procesando item:', itemError)
+                costoTotal += (item.precio || 0) * 0.6 * (item.cantidad || 1)
+              }
             }
           }
+
+          const ganancia = ventaTotal - costoTotal
+          const margen = ventaTotal > 0 ? ((ganancia / ventaTotal) * 100).toFixed(2) : '0'
+
+          // Procesar fecha
+          let fechaFormato = '-'
+          if (orden.createdAt) {
+            try {
+              const fecha = typeof orden.createdAt === 'object' && orden.createdAt.toDate
+                ? orden.createdAt.toDate()
+                : new Date(orden.createdAt)
+              fechaFormato = fecha.toLocaleDateString('es-CL')
+            } catch (dateError) {
+              console.error('Error procesando fecha:', dateError)
+              fechaFormato = '-'
+            }
+          }
+
+          ordenesData.push({
+            orderId: ordenDoc.id,
+            nombreCliente,
+            idCliente: orden.clientId || orden.userId || '-',
+            costo: costoTotal,
+            venta: ventaTotal,
+            fecha: fechaFormato,
+            margen: parseFloat(margen),
+            ganancia,
+            items: orden.items?.length || 0,
+          })
+        } catch (ordenError) {
+          console.error('Error procesando orden:', ordenError)
         }
-
-        const ganancia = ventaTotal - costoTotal
-        const margen = ventaTotal > 0 ? ((ganancia / ventaTotal) * 100).toFixed(2) : '0'
-
-        ordenesData.push({
-          orderId: ordenDoc.id,
-          nombreCliente,
-          idCliente: orden.clientId || orden.userId || '-',
-          costo: costoTotal,
-          venta: ventaTotal,
-          fecha: orden.createdAt
-            ? new Date(orden.createdAt.toDate?.() || orden.createdAt).toLocaleDateString('es-CL')
-            : '-',
-          margen: parseFloat(margen),
-          ganancia,
-          items: orden.items?.length || 0,
-        })
       }
 
-      // Ordenar por fecha descendente
+      // Ordenar por fecha descendente (solo órdenes con fecha válida)
       ordenesData.sort((a, b) => {
+        if (a.fecha === '-' || b.fecha === '-') return 0
         const dateA = new Date(a.fecha).getTime()
         const dateB = new Date(b.fecha).getTime()
         return dateB - dateA

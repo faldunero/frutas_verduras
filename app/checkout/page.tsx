@@ -263,14 +263,17 @@ export default function CheckoutPage() {
           }
 
           // Solo si Transbank fue exitoso, actualizar stock y limpiar carrito
+          console.log('Actualizando stock para', items.length, 'productos')
           for (const item of items) {
             try {
+              console.log(`Actualizando stock de ${item.nombre} (${item.id}): -${item.cantidad}`)
               const productoRef = doc(db, 'productos', item.id)
               await updateDoc(productoRef, {
                 stock: increment(-item.cantidad),
               })
+              console.log(`✅ Stock actualizado para ${item.nombre}`)
             } catch (error) {
-              console.error(`Error updating stock for ${item.id}:`, error)
+              console.error(`❌ Error updating stock for ${item.id}:`, error)
             }
           }
 
@@ -284,14 +287,18 @@ export default function CheckoutPage() {
         }
       } else {
         // Actualizar stock de productos
+        console.log('Actualizando stock para', items.length, 'productos')
         for (const item of items) {
           try {
+            console.log(`Actualizando stock de ${item.nombre} (${item.id}): -${item.cantidad}`)
             const productoRef = doc(db, 'productos', item.id)
             await updateDoc(productoRef, {
               stock: increment(-item.cantidad),
             })
+            console.log(`✅ Stock actualizado para ${item.nombre}`)
           } catch (error) {
-            console.error(`Error updating stock for ${item.id}:`, error)
+            console.error(`❌ Error updating stock for ${item.id}:`, error)
+            toast.error(`Error actualizando stock de ${item.nombre}`)
           }
         }
 

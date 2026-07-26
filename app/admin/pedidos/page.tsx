@@ -97,11 +97,8 @@ export default function PedidosPage() {
   }
 
   useEffect(() => {
-    // Solo cargar si es admin
-    if (isAuthenticated && isAdmin) {
-      loadOrdenes()
-    }
-  }, [isAuthenticated, isAdmin])
+    loadOrdenes()
+  }, [])
 
   if (!isAuthenticated || !isAdmin) {
     return (

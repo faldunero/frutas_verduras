@@ -1,16 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [verified, setVerified] = useState(false)
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [nombre, setNombre] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -29,13 +30,19 @@ export default function VerifyEmailPage() {
   const handleVerifyAndCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!password || !nombre) {
+    if (!password || !nombre || !confirmPassword) {
       toast.error('Completa todos los campos')
       return
     }
 
-    if (password.length < 6) {
-      toast.error('La contraseña debe tener al menos 6 caracteres')
+    if (password !== confirmPassword) {
+      toast.error('Las contraseñas no coinciden')
+      return
+    }
+
+    const validation = validatePassword(password)
+    if (!validation.valid) {
+      toast.error(validation.errors[0])
       return
     }
 
@@ -80,6 +87,15 @@ export default function VerifyEmailPage() {
         </div>
       </div>
     )
+  }
+
+  const validatePassword = (pwd: string): { valid: boolean; errors: string[] } => {
+    const errors: string[] = []
+    if (pwd.length < 8) errors.push('Mínimo 8 caracteres')
+    if (!/[A-Z]/.test(pwd)) errors.push('Al menos 1 mayúscula')
+    if (!/\d/.test(pwd)) errors.push('Al menos 1 número')
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pwd)) errors.push('Al menos 1 carácter especial')
+    return { valid: errors.length === 0, errors }
   }
 
   return (
@@ -127,10 +143,39 @@ export default function VerifyEmailPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mínimo 8 caracteres, mayúscula, número y carácter especial"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                 required
               />
+              {password && (
+                <div className="mt-2">
+                  {validatePassword(password).errors.map((error, i) => (
+                    <p key={i} className="text-xs text-red-600">✗ {error}</p>
+                  ))}
+                  {validatePassword(password).valid && (
+                    <p className="text-xs text-green-600">✓ Contraseña válida</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirmar Contraseña *
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Repite tu contraseña"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                required
+              />
+              {confirmPassword && (
+                <p className={`text-xs mt-1 ${password === confirmPassword ? 'text-green-600' : 'text-red-600'}`}>
+                  {password === confirmPassword ? '✓ Coinciden' : '✗ No coinciden'}
+                </p>
+              )}
             </div>
 
             <button
@@ -153,5 +198,17 @@ export default function VerifyEmailPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p>Cargando...</p>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   )
 }

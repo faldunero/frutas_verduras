@@ -1,41 +1,82 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@/hooks/useAuth'
 import toast from 'react-hot-toast'
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3'
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
   const [nombre, setNombre] = useState('')
   const [loading, setLoading] = useState(false)
-  const { register } = useAuth()
+  const [submitted, setSubmitted] = useState(false)
+  const { executeRecaptcha } = useGoogleReCaptcha()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (password !== confirmPassword) {
-      toast.error('Las contraseñas no coinciden')
-      return
-    }
-
-    if (password.length < 6) {
-      toast.error('La contraseña debe tener al menos 6 caracteres')
+    if (!nombre || !email) {
+      toast.error('Completa todos los campos')
       return
     }
 
     setLoading(true)
 
     try {
-      await register(email, password, nombre)
-      toast.success('Cuenta creada. Verifica tu email para confirmar.')
+      // Ejecutar reCAPTCHA
+      if (!executeRecaptcha) {
+        throw new Error('reCAPTCHA no está disponible')
+      }
+
+      const recaptchaToken = await executeRecaptcha('register')
+
+      // Enviar email de verificación
+      const response = await fetch('/api/send-verification-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          recaptchaToken,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al enviar email de verificación')
+      }
+
+      toast.success('Email de verificación enviado. Revisa tu correo.')
+      setSubmitted(true)
     } catch (error: any) {
+      console.error('Error:', error)
       toast.error(error.message || 'Error al registrarse')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center px-4">
+        <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
+          <div className="text-6xl mb-4">📧</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Revisa tu Email</h1>
+          <p className="text-gray-600 mb-6">
+            Enviamos un link de verificación a <strong>{email}</strong>. Haz clic en el link para completar tu registro.
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            El link expira en 24 horas.
+          </p>
+          <button
+            onClick={() => setSubmitted(false)}
+            className="text-green-600 hover:text-green-700 font-medium"
+          >
+            ← Volver
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -78,43 +119,16 @@ export default function RegisterPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-              placeholder="••••••••"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Mínimo 6 caracteres
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirmar Contraseña
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-              placeholder="••••••••"
-            />
-          </div>
+          <p className="text-xs text-gray-500">
+            Recibirás un email con un link para confirmar tu cuenta y crear tu contraseña.
+          </p>
 
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-2 px-4 rounded-lg transition"
           >
-            {loading ? 'Registrando...' : 'Crear Cuenta'}
+            {loading ? 'Enviando email...' : 'Continuar'}
           </button>
         </form>
 
@@ -136,5 +150,23 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+
+  if (!siteKey) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-red-600">Error: reCAPTCHA no está configurado</p>
+      </div>
+    )
+  }
+
+  return (
+    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
+      <RegisterForm />
+    </GoogleReCaptchaProvider>
   )
 }

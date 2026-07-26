@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
-import { FiLogOut, FiUser, FiShoppingCart, FiMenu, FiX, FiChevronDown } from 'react-icons/fi'
+import { FiLogOut, FiUser, FiShoppingCart, FiMenu, FiX } from 'react-icons/fi'
 import { useState } from 'react'
 
 export function Header() {
@@ -11,7 +11,6 @@ export function Header() {
   const { items } = useCart()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
-  const [adminMenuOpen, setAdminMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     try {
@@ -21,6 +20,10 @@ export function Header() {
     } catch (error) {
       console.error('Logout error:', error)
     }
+  }
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false)
   }
 
   const adminMenuItems = [
@@ -40,44 +43,46 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0" onClick={closeMobileMenu}>
               <div className="text-2xl">🥬</div>
               <span className="text-xl font-bold hidden sm:inline">
                 Frutas & Verduras
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8">
-              {isAdmin ? (
-                <div className="flex items-center gap-6">
-                  {adminMenuItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="hover:text-green-100 transition text-sm font-medium"
-                    >
-                      {item.label}
+            {/* Desktop Navigation - Only show on desktop */}
+            {!mobileMenuOpen && (
+              <nav className="hidden md:flex items-center gap-8">
+                {isAdmin ? (
+                  <div className="flex items-center gap-6">
+                    {adminMenuItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="hover:text-green-100 transition text-sm font-medium"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <Link href="/catalogo" className="hover:text-green-100 transition font-medium">
+                      Catálogo
                     </Link>
-                  ))}
-                </div>
-              ) : (
-                <>
-                  <Link href="/catalogo" className="hover:text-green-100 transition font-medium">
-                    Catálogo
-                  </Link>
-                  <Link href="/#faqs" className="hover:text-green-100 transition font-medium">
-                    FAQs
-                  </Link>
-                </>
-              )}
-            </nav>
+                    <Link href="/#faqs" className="hover:text-green-100 transition font-medium">
+                      FAQs
+                    </Link>
+                  </>
+                )}
+              </nav>
+            )}
 
             {/* Right Section */}
             <div className="flex items-center gap-4">
               {/* Carrito - Solo para clientes */}
               {!isAdmin && isAuthenticated && (
-                <Link href="/carrito" className="relative hover:text-green-100 transition">
+                <Link href="/carrito" className="relative hover:text-green-100 transition" onClick={closeMobileMenu}>
                   <FiShoppingCart className="text-2xl" />
                   {items.length > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
@@ -105,6 +110,7 @@ export function Header() {
                       <Link
                         href="/auth/perfil"
                         className="block px-4 py-2 hover:bg-gray-100 rounded-t-lg text-sm"
+                        onClick={() => setProfileDropdownOpen(false)}
                       >
                         Mi Perfil
                       </Link>
@@ -112,6 +118,7 @@ export function Header() {
                         <Link
                           href="/ordenes"
                           className="block px-4 py-2 hover:bg-gray-100 text-sm"
+                          onClick={() => setProfileDropdownOpen(false)}
                         >
                           Mis Órdenes
                         </Link>
@@ -142,10 +149,10 @@ export function Header() {
                 </div>
               )}
 
-              {/* Mobile Menu Button */}
+              {/* Mobile Menu Button - Only show on mobile */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 hover:bg-green-500 rounded-lg transition"
+                className="md:hidden p-2 hover:bg-green-500 rounded-lg transition"
                 aria-label="Toggle menu"
               >
                 {mobileMenuOpen ? (
@@ -161,7 +168,7 @@ export function Header() {
 
       {/* Mobile Sidebar Menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-30 lg:hidden">
+        <div className="fixed inset-0 z-30 md:hidden">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50"

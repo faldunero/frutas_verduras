@@ -387,11 +387,11 @@ export default function CuadraturePage() {
                   Mostrando {inicio + 1}-{Math.min(fin, ordenesFiltradas.length)} de {ordenesFiltradas.length}
                 </span>
                 <div className="flex gap-2">
-                  <button onClick={() => setPaginaActual(Math.max(1, paginaActual - 1))} disabled={paginaActual === 1}
-                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded-lg">← Anterior</button>
+                  <button type="button" onClick={() => setPaginaActual(Math.max(1, paginaActual - 1))} disabled={paginaActual === 1}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed rounded-lg font-medium">← Anterior</button>
                   <span className="px-4 py-2 text-sm font-medium">Pág {paginaActual} de {totalPaginas}</span>
-                  <button onClick={() => setPaginaActual(Math.min(totalPaginas, paginaActual + 1))} disabled={paginaActual === totalPaginas}
-                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 rounded-lg">Siguiente →</button>
+                  <button type="button" onClick={() => setPaginaActual(Math.min(totalPaginas, paginaActual + 1))} disabled={paginaActual === totalPaginas}
+                    className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed rounded-lg font-medium">Siguiente →</button>
                 </div>
               </div>
             )}

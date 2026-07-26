@@ -11,39 +11,32 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, recaptchaToken } = body
+    const { email } = body
 
-    if (!email || !recaptchaToken) {
+    if (!email) {
       return NextResponse.json(
-        { error: 'Email y reCAPTCHA son requeridos' },
+        { error: 'Email es requerido' },
         { status: 400 }
       )
     }
 
-    // Validar reCAPTCHA
+    // TODO: Validación de reCAPTCHA desactivada temporalmente hasta crear proyecto de GCP válido
+    // Cuando esté listo, descomentar la siguiente sección:
+    /*
     const recaptchaSecret = process.env.RECAPTCHA_SECRET_KEY
     if (!recaptchaSecret) {
-      console.error('RECAPTCHA_SECRET_KEY no configurada')
-      return NextResponse.json(
-        { error: 'Error de configuración del servidor' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: 'Error de configuración del servidor' }, { status: 500 })
     }
-
     const recaptchaResponse = await fetch('https://www.google.com/recaptcha/api/siteverify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `secret=${recaptchaSecret}&response=${recaptchaToken}`,
     })
-
     const recaptchaData = await recaptchaResponse.json()
-
     if (!recaptchaData.success || recaptchaData.score < 0.5) {
-      return NextResponse.json(
-        { error: 'Verificación de reCAPTCHA fallida' },
-        { status: 403 }
-      )
+      return NextResponse.json({ error: 'Verificación de reCAPTCHA fallida' }, { status: 403 })
     }
+    */
 
     // Validar formato de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

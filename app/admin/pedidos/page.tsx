@@ -52,7 +52,6 @@ const DEFAULT_STATUS_LABELS: { [key: string]: string } = {
 
 export default function PedidosPage() {
   const { isAdmin, isAuthenticated } = useAuth()
-  const { config, loading: configLoading } = useConfig()
   const [ordenes, setOrdenes] = useState<Orden[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<string>('todos')
@@ -63,18 +62,14 @@ export default function PedidosPage() {
   const [itemsPorPagina, setItemsPorPagina] = useState(20)
   const [paginaActual, setPaginaActual] = useState(1)
 
-  // Usar estados del config, con fallback a los defaults
-  const estados = Array.isArray(config?.estados) && config.estados.length > 0
-    ? config.estados
-    : Object.keys(DEFAULT_STATUS_LABELS)
-
-  // Crear mapeos de colores y etiquetas basados en config
-  const statusColors: { [key: string]: string } = (estados || []).reduce((acc: any, estado: string) => ({
+  // Estados por defecto
+  const estados = Object.keys(DEFAULT_STATUS_LABELS)
+  const statusColors = Object.keys(DEFAULT_STATUS_LABELS).reduce((acc: any, estado: string) => ({
     ...acc,
     [estado]: DEFAULT_STATUS_COLORS[estado] || 'bg-gray-100 text-gray-800',
   }), {})
 
-  const statusLabels: { [key: string]: string } = (estados || []).reduce((acc: any, estado: string) => ({
+  const statusLabels = Object.keys(DEFAULT_STATUS_LABELS).reduce((acc: any, estado: string) => ({
     ...acc,
     [estado]: DEFAULT_STATUS_LABELS[estado] || estado.charAt(0).toUpperCase() + estado.slice(1),
   }), {})
@@ -88,7 +83,6 @@ export default function PedidosPage() {
         id: doc.id,
         ...doc.data(),
       })) as Orden[]
-      // Ordenar por fecha descendente en el cliente
       data.sort((a, b) => {
         const dateA = new Date(a.createdAt?.toDate?.() || a.createdAt).getTime()
         const dateB = new Date(b.createdAt?.toDate?.() || b.createdAt).getTime()
@@ -104,9 +98,7 @@ export default function PedidosPage() {
   }
 
   useEffect(() => {
-    if (isAuthenticated && isAdmin) {
-      loadOrdenes()
-    }
+    loadOrdenes()
   }, [])
 
   if (!isAuthenticated || !isAdmin) {

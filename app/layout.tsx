@@ -4,6 +4,7 @@ import './globals.css'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { Toaster } from 'react-hot-toast'
+import { ConfigProvider } from '@/lib/ConfigContext'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -32,22 +33,24 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-gray-50`}
       >
-        <Header />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
-        <Toaster
-          position="bottom-right"
-          toastOptions={{
-            success: {
-              duration: 3000,
-            },
-            error: {
-              duration: 3000,
-            },
-          }}
-        />
+        <ConfigProvider>
+          <Header />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Footer />
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              success: {
+                duration: 3000,
+              },
+              error: {
+                duration: 3000,
+              },
+            }}
+          />
+        </ConfigProvider>
       </body>
     </html>
   )

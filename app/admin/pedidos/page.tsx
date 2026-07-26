@@ -165,10 +165,6 @@ export default function PedidosPage() {
   const fin = inicio + itemsPorPagina
   const ordenesPaginadas = ordenesFiltradas.slice(inicio, fin)
 
-  // Reset paginación cuando cambian filtros
-  useEffect(() => {
-    setPaginaActual(1)
-  }, [filtro, fechaDesde, fechaHasta, busquedaUsuario, busquedaOrden])
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">

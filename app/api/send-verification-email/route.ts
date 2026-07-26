@@ -63,8 +63,10 @@ export async function POST(request: NextRequest) {
     // Enviar email de verificación
     const verificationUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/auth/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`
 
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
+
     const emailResponse = await resend.emails.send({
-      from: 'onboarding@resend.dev',
+      from: fromEmail,
       to: email,
       subject: 'Verifica tu email - Frutas & Verduras',
       html: `

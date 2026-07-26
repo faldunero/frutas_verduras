@@ -7,8 +7,6 @@ import { db } from '@/lib/firebase'
 import { collection, getDocs, doc, getDoc, onSnapshot } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 
-const MARGEN_GENERAL = 0.30 // 30% - margen por defecto del Analizador
-
 interface OrdenAnalisis {
   orderId: string
   nombreCliente: string
@@ -22,6 +20,7 @@ interface OrdenAnalisis {
 }
 
 export default function CuadraturePage() {
+  const { config = {} } = useConfig()
   const [ordenes, setOrdenes] = useState<OrdenAnalisis[]>([])
   const [loading, setLoading] = useState(true)
   const [busqueda, setBusqueda] = useState('')
@@ -56,81 +55,97 @@ export default function CuadraturePage() {
 
   const fetchOrdenes = async () => {
     try {
+      // Cargar historial de márgenes una sola vez
+      const margenesSnapshot = await getDocs(collection(db, 'margenHistorico'))
+      const margenesPorFecha = margenesSnapshot.docs
+        .map((doc) => ({
+          margen: doc.data().margen / 100,
+          timestamp: doc.data().timestamp?.toDate?.() || doc.data().createdAt,
+        }))
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+
+      const obtenerMargen = (fecha: Date): number => {
+        for (const margenRecord of margenesPorFecha) {
+          if (new Date(margenRecord.timestamp) <= fecha) {
+            return margenRecord.margen
+          }
+        }
+        return margenesPorFecha.length > 0 ? margenesPorFecha[margenesPorFecha.length - 1].margen : 0.30
+      }
+
       const ordenesSnapshot = await getDocs(collection(db, 'ordenes'))
       const ordenesData: OrdenAnalisis[] = []
 
       console.log('Total órdenes encontradas:', ordenesSnapshot.size)
 
-      // Procesar órdenes sin esperar cada una (hacer en paralelo pero con límite)
-      const procesarOrdenes = async () => {
-        for (const ordenDoc of ordenesSnapshot.docs) {
-          const orden = ordenDoc.data()
-          console.log('Procesando orden:', ordenDoc.id)
+      // Procesar órdenes
+      for (const ordenDoc of ordenesSnapshot.docs) {
+        const orden = ordenDoc.data()
+        console.log('Procesando orden:', ordenDoc.id)
 
-          try {
-            // Obtener datos del cliente - intentar con userId o clientId
-            const userId = orden.userId || orden.clientId
-            let nombreCliente = 'Cliente desconocido'
+        try {
+          // Obtener datos del cliente
+          const userId = orden.userId || orden.clientId
+          let nombreCliente = 'Cliente desconocido'
 
-            if (userId) {
-              try {
-                const clienteDoc = await getDoc(doc(db, 'users', userId))
-                if (clienteDoc.exists()) {
-                  nombreCliente = clienteDoc.data().nombre || nombreCliente
-                }
-              } catch (userError) {
-                // Continuar sin datos del cliente
+          if (userId) {
+            try {
+              const clienteDoc = await getDoc(doc(db, 'users', userId))
+              if (clienteDoc.exists()) {
+                nombreCliente = clienteDoc.data().nombre || nombreCliente
               }
+            } catch (userError) {
+              // Continuar sin datos del cliente
             }
-
-            // Calcular costo y venta usando margen del Analizador (30%)
-            // Fórmula: Costo = Precio * (1 - Margen)
-            let costoTotal = 0
-            let ventaTotal = orden.total || 0
-
-            if (orden.items && Array.isArray(orden.items)) {
-              for (const item of orden.items) {
-                // Calcular costo usando el margen: precio * (1 - 30%) = precio * 0.7
-                const precio = typeof item.precio === 'number' ? item.precio : 0
-                const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 1
-                costoTotal += precio * (1 - MARGEN_GENERAL) * cantidad
-              }
-            }
-
-            const ganancia = ventaTotal - costoTotal
-            const margen = ventaTotal > 0 ? ((ganancia / ventaTotal) * 100).toFixed(2) : '0'
-
-            // Procesar fecha
-            let fechaFormato = '-'
-            if (orden.createdAt) {
-              try {
-                const fecha = typeof orden.createdAt === 'object' && orden.createdAt.toDate
-                  ? orden.createdAt.toDate()
-                  : new Date(orden.createdAt)
-                fechaFormato = fecha.toLocaleDateString('es-CL')
-              } catch (dateError) {
-                fechaFormato = '-'
-              }
-            }
-
-            ordenesData.push({
-              orderId: ordenDoc.id,
-              nombreCliente,
-              idCliente: orden.clientId || orden.userId || '-',
-              costo: costoTotal,
-              venta: ventaTotal,
-              fecha: fechaFormato,
-              margen: parseFloat(margen),
-              ganancia,
-              items: orden.items?.length || 0,
-            })
-          } catch (ordenError) {
-            console.error('Error procesando orden:', ordenError)
           }
+
+          // Procesar fecha de la orden
+          let fechaOrden = new Date()
+          let fechaFormato = '-'
+          if (orden.createdAt) {
+            try {
+              fechaOrden = typeof orden.createdAt === 'object' && orden.createdAt.toDate
+                ? orden.createdAt.toDate()
+                : new Date(orden.createdAt)
+              fechaFormato = fechaOrden.toLocaleDateString('es-CL')
+            } catch (dateError) {
+              fechaFormato = '-'
+            }
+          }
+
+          // Obtener margen vigente en la fecha de esta orden
+          const margenOrden = obtenerMargen(fechaOrden)
+
+          // Calcular costo y venta usando margen histórico
+          let costoTotal = 0
+          let ventaTotal = orden.total || 0
+
+          if (orden.items && Array.isArray(orden.items)) {
+            for (const item of orden.items) {
+              const precio = typeof item.precio === 'number' ? item.precio : 0
+              const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 1
+              costoTotal += precio * (1 - margenOrden) * cantidad
+            }
+          }
+
+          const ganancia = ventaTotal - costoTotal
+          const margen = ventaTotal > 0 ? ((ganancia / ventaTotal) * 100).toFixed(2) : '0'
+
+          ordenesData.push({
+            orderId: ordenDoc.id,
+            nombreCliente,
+            idCliente: orden.clientId || orden.userId || '-',
+            costo: costoTotal,
+            venta: ventaTotal,
+            fecha: fechaFormato,
+            margen: parseFloat(margen),
+            ganancia,
+            items: orden.items?.length || 0,
+          })
+        } catch (ordenError) {
+          console.error('Error procesando orden:', ordenError)
         }
       }
-
-      await procesarOrdenes()
 
       // Ordenar por fecha descendente (solo órdenes con fecha válida)
       ordenesData.sort((a, b) => {

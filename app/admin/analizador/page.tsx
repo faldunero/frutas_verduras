@@ -99,6 +99,24 @@ export default function AnalizadorPage() {
     return Math.round(producto.costo * (1 + margenGlobal / 100))
   }
 
+  const guardarMargen = async () => {
+    try {
+      setSaving(true)
+      // Guardar cambio de margen en historial con timestamp
+      await addDoc(collection(db, 'margenHistorico'), {
+        margen: margenGlobal,
+        timestamp: serverTimestamp(),
+        createdAt: new Date(),
+      })
+      toast.success(`Margen guardado: ${margenGlobal}%`)
+    } catch (error) {
+      console.error('Error guardando margen:', error)
+      toast.error('Error al guardar margen')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const guardarProducto = async (producto: Producto) => {
     try {
       setSaving(true)
@@ -227,6 +245,14 @@ export default function AnalizadorPage() {
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                 />
                 <span className="text-2xl font-bold text-green-600 min-w-16">{margenGlobal}%</span>
+                <button
+                  onClick={guardarMargen}
+                  disabled={saving}
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2"
+                >
+                  <FiSave size={18} />
+                  Guardar
+                </button>
               </div>
             </div>
           </div>

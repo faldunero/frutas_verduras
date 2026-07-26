@@ -48,22 +48,37 @@ export default function CuadraturePage() {
 
   const fetchOrdenes = async () => {
     try {
+      // Valor por defecto del margen (30%)
+      const MARGEN_DEFECTO = 0.30
+
       // Cargar historial de márgenes una sola vez
       const margenesSnapshot = await getDocs(collection(db, 'margenHistorico'))
       const margenesPorFecha = margenesSnapshot.docs
-        .map((doc) => ({
-          margen: doc.data().margen / 100,
-          timestamp: doc.data().timestamp?.toDate?.() || doc.data().createdAt,
-        }))
+        .map((doc) => {
+          const valor = doc.data().margen
+          // El valor se guarda como número (30), convertir a decimal (0.30)
+          return {
+            margen: typeof valor === 'number' ? valor / 100 : MARGEN_DEFECTO,
+            timestamp: doc.data().timestamp?.toDate?.() || doc.data().createdAt,
+          }
+        })
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
       const obtenerMargen = (fecha: Date): number => {
+        // Si no hay registros, usar margen por defecto
+        if (margenesPorFecha.length === 0) {
+          return MARGEN_DEFECTO
+        }
+
+        // Buscar el margen vigente en esa fecha
         for (const margenRecord of margenesPorFecha) {
           if (new Date(margenRecord.timestamp) <= fecha) {
             return margenRecord.margen
           }
         }
-        return margenesPorFecha.length > 0 ? margenesPorFecha[margenesPorFecha.length - 1].margen : 0.30
+
+        // Si la fecha es anterior a todos los registros, usar el más antiguo
+        return margenesPorFecha[margenesPorFecha.length - 1].margen
       }
 
       const ordenesSnapshot = await getDocs(collection(db, 'ordenes'))
@@ -361,7 +376,17 @@ export default function CuadraturePage() {
           </div>
         )}
 
-        {/* Tabla */}
+        {/* NO MOSTRAR TABLA - Los clientes no deben verse en Cuadratura */}
+        {/* Solo mostrar si no hay órdenes */}
+        {ordenes.length === 0 && (
+          <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+            <div className="text-center py-12 bg-white rounded-lg">
+              <p className="text-gray-600 text-lg">No hay órdenes para analizar</p>
+            </div>
+          </div>
+        )}
+
+        {/* COMENTADO: No mostrar tabla de clientes
         {ordenes.length > 0 && (
           <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
             {ordenesFiltradas.length === 0 ? (
@@ -370,7 +395,7 @@ export default function CuadraturePage() {
               </div>
             ) : (
               <>
-                <div className="bg-white rounded-lg shadow overflow-x-auto">
+                <div className="bg-white rounded-lg shadow overflow-x-auto hidden">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-100">
                       <tr>

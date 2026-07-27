@@ -5,7 +5,6 @@ import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { Toaster } from 'react-hot-toast'
 import { ConfigProvider } from '@/lib/ConfigContext'
-import LayoutClient from './layout-client'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -35,9 +34,11 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-gray-50`}
       >
         <ConfigProvider>
-          <LayoutClient>
+          <Header />
+          <main className="min-h-screen">
             {children}
-          </LayoutClient>
+          </main>
+          <Footer />
           <Toaster
             position="bottom-right"
             toastOptions={{

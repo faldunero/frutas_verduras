@@ -1,14 +1,21 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useCart } from '@/hooks/useCart'
 import { FiLogOut, FiUser, FiShoppingCart, FiMenu, FiX, FiChevronDown } from 'react-icons/fi'
 import { useState } from 'react'
 
 export function Header() {
+  const pathname = usePathname()
   const { user, isAdmin, logout, isAuthenticated } = useAuth()
   const { items } = useCart()
+
+  // No mostrar Header en /admin/*
+  if (pathname.startsWith('/admin')) {
+    return null
+  }
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false)
   const [adminMenuOpen, setAdminMenuOpen] = useState(false)

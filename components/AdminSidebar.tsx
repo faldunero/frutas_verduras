@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -63,8 +63,19 @@ export default function AdminSidebar() {
   const isActive = (href: string) => pathname === href
 
   const toggleCategory = (title: string) => {
-    setExpandedCategory(expandedCategory === title ? null : title)
+    const newExpanded = expandedCategory === title ? null : title
+    setExpandedCategory(newExpanded)
+    if (newExpanded) {
+      localStorage.setItem('adminMenuExpanded', newExpanded)
+    } else {
+      localStorage.removeItem('adminMenuExpanded')
+    }
   }
+
+  useEffect(() => {
+    const saved = localStorage.getItem('adminMenuExpanded')
+    if (saved) setExpandedCategory(saved)
+  }, [pathname])
 
   const handleNavigation = () => {
     setIsOpen(false)
@@ -160,7 +171,11 @@ export default function AdminSidebar() {
           {/* Logout Button */}
           <button
             onClick={async () => {
-              await logout()
+              try {
+                await logout()
+              } catch (e) {
+                console.error(e)
+              }
               window.location.href = '/auth/login'
             }}
             className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-950/20 transition"

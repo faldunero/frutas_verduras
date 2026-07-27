@@ -172,33 +172,16 @@ export default function CuadraturePage() {
     let coincideFecha = true
     if ((fechaInicio || fechaFin) && orden.fecha && orden.fecha !== '-') {
       try {
-        const inicioMatch = fechaInicio.match(/(\d+)\/(\d+)\/(\d+)/)
-        const finMatch = fechaFin.match(/(\d+)\/(\d+)\/(\d+)/)
-        const ordenMatch = orden.fecha.match(/(\d+)\/(\d+)\/(\d+)/)
+        // Convertir fecha de orden (DD/MM/YYYY) a YYYY-MM-DD para comparación
+        const fechaMatch = orden.fecha.match(/(\d+)\/(\d+)\/(\d+)/)
+        if (fechaMatch) {
+          const [, dia, mes, año] = fechaMatch
+          const ordenDateStr = `${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`
 
-        if (inicioMatch) {
-          const [, diaInicio, mesInicio, añoInicio] = inicioMatch
-          const inicio = new Date(parseInt(añoInicio), parseInt(mesInicio) - 1, parseInt(diaInicio))
-
-          if (ordenMatch) {
-            const [, diaOrden, mesOrden, añoOrden] = ordenMatch
-            const ordenDate = new Date(parseInt(añoOrden), parseInt(mesOrden) - 1, parseInt(diaOrden))
-            if (ordenDate < inicio) coincideFecha = false
-          }
-        }
-
-        if (finMatch && coincideFecha) {
-          const [, diaFin, mesFin, añoFin] = finMatch
-          const fin = new Date(parseInt(añoFin), parseInt(mesFin) - 1, parseInt(diaFin))
-
-          if (ordenMatch) {
-            const [, diaOrden, mesOrden, añoOrden] = ordenMatch
-            const ordenDate = new Date(parseInt(añoOrden), parseInt(mesOrden) - 1, parseInt(diaOrden))
-            if (ordenDate > fin) coincideFecha = false
-          }
+          if (fechaInicio && ordenDateStr < fechaInicio) coincideFecha = false
+          if (fechaFin && ordenDateStr > fechaFin) coincideFecha = false
         }
       } catch (dateFilterError) {
-        // Si hay error en el filtro de fecha, mostrar la orden
         coincideFecha = true
       }
     }
@@ -297,8 +280,7 @@ export default function CuadraturePage() {
                     Desde
                   </label>
                   <input
-                    type="text"
-                    placeholder="DD/MM/YYYY"
+                    type="date"
                     value={fechaInicio}
                     onChange={(e) => setFechaInicio(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
@@ -311,8 +293,7 @@ export default function CuadraturePage() {
                     Hasta
                   </label>
                   <input
-                    type="text"
-                    placeholder="DD/MM/YYYY"
+                    type="date"
                     value={fechaFin}
                     onChange={(e) => setFechaFin(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"

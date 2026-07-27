@@ -9,11 +9,11 @@ import { useWishlist } from '@/hooks/useWishlist'
 import toast from 'react-hot-toast'
 import { FiHeart } from 'react-icons/fi'
 
-const emojis: { [key: string]: string } = {
-  frutas: '🍎',
-  verduras: '🥬',
-  organico: '🌱',
-  otro: '📦',
+const categoryLabels: { [key: string]: string } = {
+  frutas: 'Frutas',
+  verduras: 'Verduras',
+  organico: 'Orgánico',
+  otro: 'Otros',
 }
 
 export function ProductosDestacados() {
@@ -80,7 +80,7 @@ export function ProductosDestacados() {
               />
             ) : (
               <div className="bg-gradient-to-br from-green-100 to-green-200 h-48 flex items-center justify-center text-6xl">
-                {emojis[producto.categoria] || '📦'}
+                {categoryLabels[producto.categoria] || 'Otros'}
               </div>
             )}
             <div className="p-4">

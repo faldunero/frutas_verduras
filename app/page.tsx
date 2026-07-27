@@ -13,7 +13,7 @@ export default function Home() {
       {!isAuthenticated && <section
         className="text-white py-32 relative overflow-hidden"
         style={{
-          backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.45) 100%), url("https://images.pexels.com/photos/7543130/pexels-photo-7543130.jpeg?auto=compress&cs=tinysrgb&w=1200&h=600&fit=crop")',
+          backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.45) 100%), url("/images/banner-hero.png")',
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}

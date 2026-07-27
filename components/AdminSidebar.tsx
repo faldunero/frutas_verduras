@@ -41,7 +41,6 @@ const menuCategories: MenuCategory[] = [
     items: [
       { label: 'Pedidos', href: '/admin/pedidos', icon: <FiShoppingCart size={18} /> },
       { label: 'Cuadratura', href: '/admin/cuadratura', icon: <FiTrendingUp size={18} /> },
-      { label: 'ARCOP', href: '/admin/solicitudes-arcop', icon: <FiDollarSign size={18} /> },
     ],
   },
   {
@@ -50,13 +49,14 @@ const menuCategories: MenuCategory[] = [
     items: [
       { label: 'Usuarios', href: '/admin/usuarios', icon: <FiUsers size={18} /> },
       { label: 'Configuración', href: '/admin/configuracion', icon: <FiSliders size={18} /> },
+      { label: 'ARCOP', href: '/admin/solicitudes-arcop', icon: <FiDollarSign size={18} /> },
     ],
   },
 ]
 
 export default function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false)
-  const [expandedCategory, setExpandedCategory] = useState<string | null>('Dashboard')
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
   const pathname = usePathname()
   const { user, logout } = useAuth()
 

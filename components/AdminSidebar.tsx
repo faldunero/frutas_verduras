@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
@@ -89,7 +88,12 @@ export default function AdminSidebar() {
       >
         {/* Header */}
         <div className="p-4 border-b border-gray-700 flex justify-center">
-          <Link href="/admin" onClick={handleNavigation}>
+          <button
+            onClick={() => {
+              window.location.href = '/admin/pedidos'
+            }}
+            className="cursor-pointer hover:opacity-80 transition"
+          >
             <Image
               src="/logo.webp"
               alt="El Chiringuito de Felipe"
@@ -97,7 +101,7 @@ export default function AdminSidebar() {
               height={120}
               className="w-32 h-auto"
             />
-          </Link>
+          </button>
         </div>
 
         {/* Menu */}
@@ -123,11 +127,12 @@ export default function AdminSidebar() {
               {expandedCategory === category.title && (
                 <div className="ml-4 mt-1 space-y-1 border-l border-gray-700 pl-3">
                   {category.items.map((item) => (
-                    <Link
+                    <button
                       key={item.href}
-                      href={item.href}
-                      onClick={handleNavigation}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition ${
+                      onClick={() => {
+                        window.location.href = item.href
+                      }}
+                      className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition text-left ${
                         isActive(item.href)
                           ? 'bg-green-600 text-white'
                           : 'text-gray-400 hover:text-white hover:bg-gray-800'
@@ -135,7 +140,7 @@ export default function AdminSidebar() {
                     >
                       {item.icon}
                       <span>{item.label}</span>
-                    </Link>
+                    </button>
                   ))}
                 </div>
               )}

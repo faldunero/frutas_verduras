@@ -8,10 +8,10 @@ export default function Home() {
   const { isAuthenticated } = useAuth()
 
   return (
-    <div className="space-y-12">
+    <div>
       {/* Hero Section - Solo si NO está logeado */}
       {!isAuthenticated && <section
-        className="relative overflow-hidden h-[270px]"
+        className="relative overflow-hidden h-screen"
         style={{
           backgroundImage: 'url("/images/banner-hero.png")',
           backgroundSize: 'cover',
@@ -19,6 +19,8 @@ export default function Home() {
           backgroundAttachment: 'scroll'
         }}
       />}
+
+      <div className="space-y-12">
 
       {/* Features Section - Solo si NO está logeado */}
       {!isAuthenticated &&
@@ -114,6 +116,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </div>
     </div>
   )
 }

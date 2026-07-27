@@ -40,7 +40,7 @@ export function Header() {
 
   return (
     <>
-      <header className="bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg sticky top-0 z-40">
+      <header className="fixed top-0 w-full z-40 bg-gradient-to-b from-black/40 to-transparent text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}

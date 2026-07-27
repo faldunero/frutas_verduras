@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -14,7 +13,6 @@ export function useAuth() {
   const [user, setUser] = useState<FirebaseUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [rol, setRol] = useState<'user' | 'admin' | null>(null)
-  const router = useRouter()
 
   useEffect(() => {
     // Listen for auth state changes
@@ -52,20 +50,8 @@ export function useAuth() {
       const result = await signInWithEmailAndPassword(auth, email, password)
       if (result.user) {
         await fetchUserRol(result.user.uid)
-
-        // Verificar rol y redirigir
-        const userDoc = await getDoc(doc(db, 'users', result.user.uid))
-        if (userDoc.exists()) {
-          const userData = userDoc.data()
-          if (userData.rol === 'admin') {
-            router.push('/admin/pedidos')
-          } else {
-            router.push('/catalogo')
-          }
-        } else {
-          router.push('/catalogo')
-        }
       }
+      return result.user
     } catch (error: any) {
       throw new Error(error.message || 'Error al iniciar sesión')
     }
@@ -102,7 +88,6 @@ export function useAuth() {
       await signOut(auth)
       setUser(null)
       setRol(null)
-      router.push('/')
     } catch (error: any) {
       throw new Error(error.message || 'Error al cerrar sesión')
     }

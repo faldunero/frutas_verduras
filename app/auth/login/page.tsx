@@ -43,8 +43,24 @@ export default function LoginPage() {
         localStorage.removeItem('frutasVerduras_emailRecordado')
       }
 
-      await login(email, password)
+      const user = await login(email, password)
+
+      // Esperar un poco para que se guarde en Firebase
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      // Redirigir basado en el rol
+      const { getDoc, doc } = await import('firebase/firestore')
+      const { db } = await import('@/lib/firebase')
+      const userDoc = await getDoc(doc(db, 'users', user.uid))
+      const userData = userDoc.data()
+
       toast.success('¡Bienvenido!')
+
+      if (userData?.rol === 'admin') {
+        window.location.href = '/admin/pedidos'
+      } else {
+        window.location.href = '/catalogo'
+      }
     } catch (error: any) {
       // Mensajes de error específicos
       const errorCode = error.code || ''

@@ -226,7 +226,7 @@ export default function CuadraturePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">⏳</div>
+          <div className="animate-spin text-4xl mb-4"></div>
           <p className="text-gray-600">Cargando cuadratura...</p>
         </div>
       </div>
@@ -329,7 +329,7 @@ export default function CuadraturePage() {
                     }}
                     className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-900 font-medium rounded-lg transition"
                   >
-                    🔄 Limpiar
+                     Limpiar
                   </button>
                 </div>
               </div>

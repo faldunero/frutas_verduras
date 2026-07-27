@@ -180,7 +180,7 @@ export default function ObservabilidadPage() {
             <Link href="/admin" className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 mb-4">
               <FiArrowLeft /> Volver
             </Link>
-            <h1 className="text-4xl font-bold text-gray-900">📊 Observabilidad del Sistema</h1>
+            <h1 className="text-4xl font-bold text-gray-900"> Observabilidad del Sistema</h1>
             <p className="text-gray-600 mt-2">Monitoreo en tiempo real de la aplicación</p>
           </div>
           <button
@@ -252,7 +252,7 @@ export default function ObservabilidadPage() {
 
         <div className="bg-white rounded-lg shadow">
           <div className="border-b border-gray-200 p-6">
-            <h2 className="text-2xl font-bold text-gray-900">📋 Log de Eventos en Tiempo Real</h2>
+            <h2 className="text-2xl font-bold text-gray-900"> Log de Eventos en Tiempo Real</h2>
             <p className="text-gray-600 text-sm mt-1">Últimos {systemEvents.length} eventos del sistema</p>
           </div>
 

@@ -76,7 +76,7 @@ export default function EnviosEntregasPage() {
 
           {/* Costo de Envío */}
           <div className="bg-white rounded-lg shadow p-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">💰 Costo de Envío</h2>
+            <h2 className="text-2xl font-bold mb-4 text-gray-900"> Costo de Envío</h2>
             <div className="bg-gray-50 p-4 rounded mb-4">
               <p className="text-gray-700 mb-3"><strong>Envío Gratis en Pedidos:</strong></p>
               <ul className="space-y-2 text-gray-700">
@@ -92,7 +92,7 @@ export default function EnviosEntregasPage() {
 
           {/* Seguimiento */}
           <div className="bg-white rounded-lg shadow p-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">📦 Seguimiento de tu Pedido</h2>
+            <h2 className="text-2xl font-bold mb-4 text-gray-900"> Seguimiento de tu Pedido</h2>
             <p className="text-gray-700 mb-4">
               Recibirás notificaciones por email y SMS en cada paso:
             </p>
@@ -130,7 +130,7 @@ export default function EnviosEntregasPage() {
 
           {/* Empaque */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-8">
-            <h3 className="text-xl font-bold text-blue-900 mb-4">📦 Nuestro Empaque Especial</h3>
+            <h3 className="text-xl font-bold text-blue-900 mb-4"> Nuestro Empaque Especial</h3>
             <p className="text-blue-800 mb-3">
               Tus productos llegan frescos gracias a:
             </p>

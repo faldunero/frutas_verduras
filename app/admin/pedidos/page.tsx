@@ -106,7 +106,7 @@ export default function PedidosPage() {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <div className="animate-spin text-4xl mb-4"></div>
             <p className="text-gray-600">Verificando acceso...</p>
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function PedidosPage() {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <div className="text-6xl mb-4">🔐</div>
+            <div className="text-6xl mb-4"></div>
             <h1 className="text-2xl font-bold mb-2">Acceso denegado</h1>
             <p className="text-gray-600">
               Solo los administradores pueden ver esta página
@@ -306,7 +306,7 @@ export default function PedidosPage() {
 
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <div className="animate-spin text-4xl mb-4"></div>
             <p className="text-gray-600">Cargando pedidos...</p>
           </div>
         ) : ordenesFiltradas.length === 0 ? (

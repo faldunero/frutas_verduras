@@ -178,7 +178,7 @@ export default function ContactoPage() {
 
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="font-bold text-lg mb-2">📧 Email</h3>
+                <h3 className="font-bold text-lg mb-2"> Email</h3>
                 <a
                   href="mailto:info@frutasverduras.cl"
                   className="text-green-600 hover:text-green-700"
@@ -188,14 +188,14 @@ export default function ContactoPage() {
               </div>
 
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="font-bold text-lg mb-2">📱 Teléfono</h3>
+                <h3 className="font-bold text-lg mb-2"> Teléfono</h3>
                 <a href="tel:+56912345678" className="text-green-600 hover:text-green-700">
                   +56 9 1234 5678
                 </a>
               </div>
 
               <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="font-bold text-lg mb-2">🕐 Horario de Atención</h3>
+                <h3 className="font-bold text-lg mb-2"> Horario de Atención</h3>
                 <p className="text-gray-700 mb-2">
                   <strong>Lunes a Viernes:</strong> 9:00 - 18:00
                 </p>

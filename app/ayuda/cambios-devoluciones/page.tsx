@@ -18,7 +18,7 @@ export default function CambiosDevolucionesPage() {
         <div className="space-y-8">
           {/* Política General */}
           <div className="bg-white rounded-lg shadow p-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">📋 Política de Cambios y Devoluciones</h2>
+            <h2 className="text-2xl font-bold mb-4 text-gray-900"> Política de Cambios y Devoluciones</h2>
             <p className="text-gray-700 mb-4">
               Sabemos que a veces los productos no cumplen tus expectativas. Si tienes inconformidad con tu compra, aquí te explicamos cómo procedemos.
             </p>
@@ -60,7 +60,7 @@ export default function CambiosDevolucionesPage() {
 
           {/* Proceso */}
           <div className="bg-white rounded-lg shadow p-8">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">🔄 Proceso en caso de Inconformidad</h2>
+            <h2 className="text-2xl font-bold mb-4 text-gray-900"> Proceso en caso de Inconformidad</h2>
             <div className="space-y-4">
               <div className="flex items-start gap-4">
                 <div className="bg-green-600 text-white rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 font-bold">1</div>
@@ -112,7 +112,7 @@ export default function CambiosDevolucionesPage() {
 
           {/* Contacto */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-8">
-            <h3 className="text-xl font-bold text-blue-900 mb-4">📧 ¿Necesitas Ayuda?</h3>
+            <h3 className="text-xl font-bold text-blue-900 mb-4"> ¿Necesitas Ayuda?</h3>
             <p className="text-blue-800 mb-3">
               Si tienes problemas con tu pedido, contáctanos:
             </p>

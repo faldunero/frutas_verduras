@@ -23,7 +23,7 @@ export default function AdminLayout({
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">⏳</div>
+          <div className="animate-spin w-12 h-12 border-4 border-green-200 border-t-green-600 rounded-full mb-4"></div>
           <p className="text-gray-600">Verificando acceso...</p>
         </div>
       </div>

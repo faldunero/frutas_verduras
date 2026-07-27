@@ -181,7 +181,7 @@ export default function AnalizadorPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-2xl mx-auto px-4 py-12">
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <div className="text-6xl mb-4">🔐</div>
+            <div className="text-6xl mb-4"></div>
             <h1 className="text-2xl font-bold mb-2">Acceso denegado</h1>
           </div>
         </div>
@@ -268,7 +268,7 @@ export default function AnalizadorPage() {
         {/* Tabla */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <div className="animate-spin text-4xl mb-4"></div>
             <p className="text-gray-600">Cargando productos...</p>
           </div>
         ) : productosFiltrados.length === 0 ? (

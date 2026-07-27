@@ -17,8 +17,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Empresa */}
           <div>
-            <h3 className="text-white font-bold mb-4 flex items-center gap-2">
-              <span className="text-2xl">🥬</span> Frutas & Verduras
+            <h3 className="text-white font-bold mb-4">
+              Frutas & Verduras
             </h3>
             <p className="text-sm">
               Ofrecemos frutas y verduras frescas de calidad, entregadas
@@ -84,10 +84,10 @@ export function Footer() {
           <div>
             <h4 className="text-white font-bold mb-4">Contacto</h4>
             <ul className="space-y-2 text-sm">
-              <li>📧 info@frutasverduras.cl</li>
-              <li>📱 +56 9 1234 5678</li>
-              <li>🕐 Lun-Vie: 9:00 - 18:00</li>
-              <li>🕐 Sáb: 10:00 - 14:00</li>
+              <li>info@frutasverduras.cl</li>
+              <li>+56 9 1234 5678</li>
+              <li>Lun-Vie: 9:00 - 18:00</li>
+              <li>Sáb: 10:00 - 14:00</li>
             </ul>
           </div>
         </div>
@@ -97,7 +97,7 @@ export function Footer() {
             <p>&copy; 2026 Frutas & Verduras. Todos los derechos reservados.</p>
             <div className="flex gap-4 mt-4 md:mt-0">
               <Link href="/privacidad-datos" className="hover:text-green-400 transition">
-                🔐 Gestionar Datos (ARCOP)
+                Gestionar Datos (ARCOP)
               </Link>
             </div>
           </div>

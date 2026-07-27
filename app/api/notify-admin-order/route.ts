@@ -78,12 +78,12 @@ export async function POST(request: NextRequest) {
             <div class="order-number">
               Orden #${ordenId}
               <span class="status-badge ${estado === 'confirmada' ? 'status-confirmed' : 'status-pending'}">
-                ${estado === 'confirmada' ? '✅ Pagada' : '⏳ Pendiente Pago'}
+                ${estado === 'confirmada' ? '✅ Pagada' : ' Pendiente Pago'}
               </span>
             </div>
 
             <div class="customer-info">
-              <h3 style="margin-top: 0;">📋 Información del Cliente</h3>
+              <h3 style="margin-top: 0;"> Información del Cliente</h3>
               <p><strong>Nombre:</strong> ${nombre}</p>
               <p><strong>Email:</strong> ${email}</p>
               <p><strong>Teléfono:</strong> ${telefono}</p>
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
               <p><strong>Método de Pago:</strong> ${metodoPago === 'transbank' ? 'Transbank' : 'Transferencia Bancaria'}</p>
             </div>
 
-            <h3>📦 Productos</h3>
+            <h3> Productos</h3>
             <table>
               <thead>
                 <tr style="background: #f3f4f6;">
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
 
             <div style="margin-top: 30px; padding: 15px; background: white; border-radius: 4px; border: 1px solid #e5e7eb;">
               <p style="margin: 0; color: #666; font-size: 12px;">
-                📊 <strong>Acceso a dashboard:</strong> <a href="https://frutas-verduras.onrender.com/admin/pedidos" style="color: #dc2626;">Ver en Admin Panel</a>
+                 <strong>Acceso a dashboard:</strong> <a href="https://frutas-verduras.onrender.com/admin/pedidos" style="color: #dc2626;">Ver en Admin Panel</a>
               </p>
             </div>
           </div>

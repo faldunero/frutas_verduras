@@ -11,9 +11,9 @@ import { FiSearch } from 'react-icons/fi'
 
 const emojis: { [key: string]: string } = {
   frutas: '🍎',
-  verduras: '🥬',
-  organico: '🌱',
-  otro: '📦',
+  verduras: '',
+  organico: '',
+  otro: '',
 }
 
 export default function CatalogoPage() {
@@ -246,7 +246,7 @@ export default function CatalogoPage() {
         {/* Productos */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <div className="animate-spin text-4xl mb-4"></div>
             <p className="text-gray-600">Cargando productos...</p>
           </div>
         ) : productosFiltrados.length === 0 ? (
@@ -285,7 +285,7 @@ export default function CatalogoPage() {
                     />
                   ) : (
                     <div className="bg-gradient-to-br from-green-100 to-green-200 h-48 flex items-center justify-center text-6xl">
-                      {emojis[producto.categoria] || '📦'}
+                      {emojis[producto.categoria] || ''}
                     </div>
                   )}
                   <div className="p-4 flex-1 flex flex-col">

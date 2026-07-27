@@ -118,7 +118,7 @@ export default function ProductosPage() {
       <AdminGuard>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <div className="animate-spin text-4xl mb-4"></div>
             <p className="text-gray-600">Cargando productos...</p>
           </div>
         </div>
@@ -362,7 +362,7 @@ export default function ProductosPage() {
               href="/admin/pedidos"
               className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
-              📋 Ver Pedidos
+               Ver Pedidos
             </Link>
           </div>
         )}

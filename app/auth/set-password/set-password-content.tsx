@@ -78,7 +78,7 @@ export default function SetPasswordContent() {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center px-4">
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-2">🥬</div>
+          <div className="text-5xl mb-2"></div>
           <h1 className="text-3xl font-bold text-gray-900">Frutas & Verduras</h1>
           <p className="text-gray-600 mt-2">Crea tu contraseña</p>
           <p className="text-xs text-gray-500 mt-3 bg-green-50 py-2 px-3 rounded">

@@ -114,7 +114,7 @@ export default function ProductoPage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">⏳</div>
+          <div className="animate-spin text-4xl mb-4"></div>
           <p className="text-gray-600">Cargando producto...</p>
         </div>
       </div>
@@ -144,7 +144,7 @@ export default function ProductoPage() {
               {producto.imagenUrl ? (
                 <img src={producto.imagenUrl} alt={producto.nombre} className="w-full h-96 object-cover rounded-lg"/>
               ) : (
-                <div className="bg-green-100 h-96 rounded-lg flex items-center justify-center text-9xl">📦</div>
+                <div className="bg-green-100 h-96 rounded-lg flex items-center justify-center text-9xl"></div>
               )}
             </div>
             <div>

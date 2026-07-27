@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
         <body>
           <div class="container">
             <div class="header">
-              <h1>🥬 Tu orden ha sido confirmada</h1>
+              <h1> Tu orden ha sido confirmada</h1>
             </div>
             <div class="content">
               <p>Hola <strong>${nombre}</strong>,</p>

@@ -37,7 +37,7 @@ export default function Home() {
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
           <div className="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition">
-            <div className="text-5xl mb-4">🚚</div>
+            <div className="text-5xl mb-4"></div>
             <h3 className="text-xl font-bold mb-2">Entrega Rápida</h3>
             <p className="text-gray-600">
               Entregamos en menos de 24 horas. Recibe tus productos frescos en tu
@@ -46,7 +46,7 @@ export default function Home() {
           </div>
 
           <div className="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition">
-            <div className="text-5xl mb-4">🌱</div>
+            <div className="text-5xl mb-4"></div>
             <h3 className="text-xl font-bold mb-2">100% Fresco</h3>
             <p className="text-gray-600">
               Productos seleccionados diariamente de los mejores productores
@@ -55,7 +55,7 @@ export default function Home() {
           </div>
 
           <div className="bg-white p-8 rounded-lg shadow-md hover:shadow-lg transition">
-            <div className="text-5xl mb-4">💰</div>
+            <div className="text-5xl mb-4"></div>
             <h3 className="text-xl font-bold mb-2">Mejores Precios</h3>
             <p className="text-gray-600">
               Compra directo del productor sin intermediarios. Ahorra hasta 40%.

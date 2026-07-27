@@ -59,7 +59,6 @@ export function Header() {
                 setAdminMenuOpen(false)
               }}
             >
-              <div className="text-2xl">🥬</div>
               <span className="text-xl font-bold hidden sm:inline">
                 Frutas & Verduras
               </span>
@@ -192,8 +191,7 @@ export function Header() {
           <div className="absolute left-0 top-0 bottom-0 w-64 bg-white shadow-lg overflow-y-auto animate-in slide-in-from-left">
             <div className="p-4 border-b border-gray-200">
               <div className="flex items-center gap-2">
-                <div className="text-2xl">🥬</div>
-                <span className="font-bold text-gray-900">Frutas & Verduras</span>
+                  <span className="font-bold text-gray-900">Frutas & Verduras</span>
               </div>
             </div>
 

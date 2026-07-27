@@ -48,7 +48,7 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center px-4">
         <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
-          <div className="text-6xl mb-4">📧</div>
+          <div className="text-6xl mb-4"></div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Revisa tu Email</h1>
           <p className="text-gray-600 mb-6">
             Enviamos un link de verificación a <strong>{email}</strong>. Haz clic en el link para completar tu registro.
@@ -72,7 +72,7 @@ export default function RegisterPage() {
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-5xl mb-2">🥬</div>
+          <div className="text-5xl mb-2"></div>
           <h1 className="text-3xl font-bold text-gray-900">Frutas & Verduras</h1>
           <p className="text-gray-600 mt-2">Crea tu cuenta</p>
           <p className="text-xs text-gray-500 mt-3 bg-green-50 py-2 px-3 rounded">

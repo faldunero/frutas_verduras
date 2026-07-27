@@ -62,7 +62,7 @@ export default function OrdenConfirmadaPage() {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4">
           <div className="text-center">
-            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <div className="animate-spin text-4xl mb-4"></div>
             <p className="text-gray-600">Cargando información de tu orden...</p>
           </div>
         </div>

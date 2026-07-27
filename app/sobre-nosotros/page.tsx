@@ -36,7 +36,7 @@ export default function SobreNosotrosPage() {
           <h2 className="text-3xl font-bold mb-4 text-gray-900">Nuestros Valores</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white p-6 rounded-lg shadow">
-              <div className="text-4xl mb-3">🌱</div>
+              <div className="text-4xl mb-3"></div>
               <h3 className="text-xl font-bold mb-2">Frescura</h3>
               <p className="text-gray-700">
                 Garantizamos que cada producto sea recolectado y entregado en su mejor momento de madurez y frescura.

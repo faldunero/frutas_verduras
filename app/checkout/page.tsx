@@ -66,7 +66,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-2xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow p-8 text-center">
-            <div className="text-6xl mb-4">🔐</div>
+            <div className="text-6xl mb-4"></div>
             <h1 className="text-2xl font-bold mb-2">Inicia sesión para continuar</h1>
             <p className="text-gray-600 mb-8">
               Necesitas tener una cuenta para realizar tu compra

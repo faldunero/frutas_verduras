@@ -56,7 +56,7 @@ export default function WishlistPage() {
               {producto.imagenUrl ? (
                 <img src={producto.imagenUrl} alt={producto.nombre} className="w-full h-48 object-cover"/>
               ) : (
-                <div className="bg-green-100 h-48 flex items-center justify-center text-5xl">📦</div>
+                <div className="bg-green-100 h-48 flex items-center justify-center text-5xl"></div>
               )}
               <div className="p-4">
                 <h3 className="font-bold text-lg mb-1">{producto.nombre}</h3>

@@ -104,7 +104,7 @@ export default function ConfiguracionPage() {
       <AdminGuard>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin text-4xl mb-4">⏳</div>
+            <div className="animate-spin text-4xl mb-4"></div>
             <p className="text-gray-600">Cargando configuración...</p>
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function ConfiguracionPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Categorías */}
             <ConfigSection
-              title="📦 Categorías"
+              title=" Categorías"
               section="categorias"
               items={config.categorias}
               isEditing={editingSection === 'categorias'}
@@ -148,7 +148,7 @@ export default function ConfiguracionPage() {
 
             {/* Estados */}
             <ConfigSection
-              title="📋 Estados de Órdenes"
+              title=" Estados de Órdenes"
               section="estados"
               items={config.estados}
               isEditing={editingSection === 'estados'}
@@ -240,7 +240,7 @@ export default function ConfiguracionPage() {
               onClick={handleReset}
               className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-8 rounded-lg transition"
             >
-              🔄 Restaurar Valores Iniciales
+               Restaurar Valores Iniciales
             </button>
           </div>
         </div>

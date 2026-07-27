@@ -176,7 +176,7 @@ export default function AdminSidebar() {
               } catch (e) {
                 console.error(e)
               }
-              window.location.href = '/auth/login'
+              window.location.href = '/'
             }}
             className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-950/20 transition"
           >

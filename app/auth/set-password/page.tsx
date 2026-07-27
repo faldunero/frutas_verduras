@@ -124,7 +124,7 @@ function SetPasswordContent() {
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-5xl mb-2"></div>
+          
           <h1 className="text-3xl font-bold text-gray-900">Crear Contraseña</h1>
           <p className="text-gray-600 mt-2">Paso 2 de 2: Asegura tu cuenta</p>
           <p className="text-xs text-gray-500 mt-3 bg-green-50 py-2 px-3 rounded">
@@ -236,7 +236,7 @@ export default function SetPasswordPage() {
       fallback={
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin text-4xl mb-4"></div>
+            <div className="animate-spin w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full mx-auto mb-4"></div>
             <p className="text-gray-600">Cargando...</p>
           </div>
         </div>

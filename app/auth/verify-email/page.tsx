@@ -8,7 +8,7 @@ export default function VerifyEmailPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center px-4">
         <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center">
-          <div className="animate-spin text-4xl mb-4"></div>
+          <div className="animate-spin w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full mx-auto mb-4"></div>
           <p className="text-gray-600">Cargando...</p>
         </div>
       </div>

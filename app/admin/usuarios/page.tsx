@@ -205,7 +205,7 @@ export default function UsuariosPage() {
       <AdminGuard>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin text-4xl mb-4"></div>
+            <div className="animate-spin w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full mx-auto mb-4"></div>
             <p className="text-gray-600">Cargando usuarios...</p>
           </div>
         </div>

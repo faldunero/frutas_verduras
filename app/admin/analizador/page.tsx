@@ -268,7 +268,7 @@ export default function AnalizadorPage() {
         {/* Tabla */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin text-4xl mb-4"></div>
+            <div className="animate-spin w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full mx-auto mb-4"></div>
             <p className="text-gray-600">Cargando productos...</p>
           </div>
         ) : productosFiltrados.length === 0 ? (

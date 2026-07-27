@@ -42,7 +42,7 @@ export default function AyudaPage() {
           {/* Envíos y Entregas */}
           <Link href="/ayuda/envios-entregas">
             <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer h-full">
-              <div className="text-4xl mb-4"></div>
+              
               <h3 className="text-xl font-bold text-gray-900 mb-2">Envíos y Entregas</h3>
               <p className="text-gray-700 mb-4">
                 Información sobre tiempos, zonas de cobertura y seguimiento de tu pedido.
@@ -54,7 +54,7 @@ export default function AyudaPage() {
           {/* Cambios y Devoluciones */}
           <Link href="/ayuda/cambios-devoluciones">
             <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer h-full">
-              <div className="text-4xl mb-4"></div>
+              
               <h3 className="text-xl font-bold text-gray-900 mb-2">Cambios y Devoluciones</h3>
               <p className="text-gray-700 mb-4">
                 Todo sobre nuestra política de cambios, devoluciones y garantía de satisfacción.
@@ -66,7 +66,7 @@ export default function AyudaPage() {
           {/* Preguntas Frecuentes */}
           <Link href="/#faqs">
             <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer h-full">
-              <div className="text-4xl mb-4"></div>
+              
               <h3 className="text-xl font-bold text-gray-900 mb-2">Preguntas Frecuentes</h3>
               <p className="text-gray-700 mb-4">
                 Lee las preguntas más comunes y sus respuestas.

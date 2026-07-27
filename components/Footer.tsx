@@ -6,8 +6,8 @@ import { usePathname } from 'next/navigation'
 export function Footer() {
   const pathname = usePathname()
 
-  // No mostrar Footer en /admin/*
-  if (pathname.startsWith('/admin')) {
+  // No mostrar Footer en /admin/* ni en home (/)
+  if (pathname.startsWith('/admin') || pathname === '/') {
     return null
   }
 

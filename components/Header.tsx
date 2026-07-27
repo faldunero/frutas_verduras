@@ -12,8 +12,8 @@ export function Header() {
   const { user, isAdmin, logout, isAuthenticated } = useAuth()
   const { items } = useCart()
 
-  // No mostrar Header en /admin/*
-  if (pathname.startsWith('/admin')) {
+  // No mostrar Header en /admin/* ni en home (/)
+  if (pathname.startsWith('/admin') || pathname === '/') {
     return null
   }
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { FiMenu, FiX, FiChevronDown, FiBarChart2, FiBox, FiDollarSign, FiSettings, FiActivity, FiShoppingCart, FiTrendingUp, FiUsers, FiSliders } from 'react-icons/fi'
 
@@ -85,13 +86,15 @@ export default function AdminSidebar() {
         } md:relative md:translate-x-0`}
       >
         {/* Header */}
-        <div className="p-6 border-b border-gray-700">
-          <Link href="/admin" className="flex items-center gap-2" onClick={handleNavigation}>
-            <div className="text-3xl">🥬</div>
-            <div>
-              <div className="font-bold text-lg text-white">Admin</div>
-              <div className="text-xs text-gray-400">F&V</div>
-            </div>
+        <div className="p-4 border-b border-gray-700 flex justify-center">
+          <Link href="/admin" onClick={handleNavigation}>
+            <Image
+              src="/logo.webp"
+              alt="El Chiringuito de Felipe"
+              width={120}
+              height={120}
+              className="w-32 h-auto"
+            />
           </Link>
         </div>
 

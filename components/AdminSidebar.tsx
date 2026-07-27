@@ -4,7 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { FiMenu, FiX, FiChevronDown, FiBarChart2, FiBox, FiDollarSign, FiSettings, FiActivity, FiShoppingCart, FiTrendingUp, FiUsers, FiSliders } from 'react-icons/fi'
+import { useAuth } from '@/hooks/useAuth'
+import { FiMenu, FiX, FiChevronDown, FiBarChart2, FiBox, FiDollarSign, FiSettings, FiActivity, FiShoppingCart, FiTrendingUp, FiUsers, FiSliders, FiLogOut } from 'react-icons/fi'
 
 interface MenuItem {
   label: string
@@ -58,6 +59,7 @@ export default function AdminSidebar() {
   const [isOpen, setIsOpen] = useState(false)
   const [expandedCategory, setExpandedCategory] = useState<string | null>('Dashboard')
   const pathname = usePathname()
+  const { user, logout } = useAuth()
 
   const isActive = (href: string) => pathname === href
 
@@ -142,14 +144,25 @@ export default function AdminSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700 bg-gray-950">
-          <Link
-            href="/"
-            onClick={handleNavigation}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition"
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700 bg-gray-950 space-y-3">
+          {/* User Info */}
+          <div className="px-4 py-3 bg-gray-800 rounded-lg">
+            <p className="text-xs text-gray-400">Usuario</p>
+            <p className="text-sm font-medium text-white truncate">{user?.email?.split('@')[0]}</p>
+            <p className="text-xs text-green-400 font-semibold mt-1">👑 Administrador</p>
+          </div>
+
+          {/* Logout Button */}
+          <button
+            onClick={async () => {
+              await logout()
+              handleNavigation()
+            }}
+            className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-950/20 transition"
           >
-            ← Volver
-          </Link>
+            <FiLogOut size={16} />
+            Cerrar sesión
+          </button>
         </div>
       </aside>
 

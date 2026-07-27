@@ -11,31 +11,14 @@ export default function Home() {
     <div className="space-y-12">
       {/* Hero Section - Solo si NO está logeado */}
       {!isAuthenticated && <section
-        className="text-white py-32 relative overflow-hidden"
+        className="relative overflow-hidden h-96"
         style={{
-          backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.45) 100%), url("/images/banner-hero.png")',
+          backgroundImage: 'url("/images/banner-hero.png")',
           backgroundSize: 'cover',
-          backgroundPosition: 'center'
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
         }}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-2xl">
-            <h1 className="text-5xl md:text-6xl font-bold mb-4">
-              Frutas & Verduras Frescas
-            </h1>
-            <p className="text-lg mb-8 text-green-50">
-              Compra los mejores productos frescos directamente de nuestros
-              productores. Entrega rápida y segura a tu domicilio.
-            </p>
-            <Link
-              href="/catalogo"
-              className="inline-block bg-white text-green-600 px-8 py-3 rounded-lg font-bold hover:bg-green-50 transition shadow-lg"
-            >
-              Ver Catálogo Completo
-            </Link>
-          </div>
-        </div>
-      </section>}
+      />}
 
       {/* Features Section - Solo si NO está logeado */}
       {!isAuthenticated &&

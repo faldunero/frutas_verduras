@@ -58,7 +58,7 @@ export function useAuth() {
         if (userDoc.exists()) {
           const userData = userDoc.data()
           if (userData.rol === 'admin') {
-            router.push('/admin/productos')
+            router.push('/admin/pedidos')
           } else {
             router.push('/catalogo')
           }

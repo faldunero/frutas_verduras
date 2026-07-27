@@ -83,7 +83,7 @@ export default function AdminSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-64 bg-gray-900 text-white shadow-lg transform transition-transform duration-300 z-40 ${
+        className={`fixed left-0 top-0 h-screen w-64 bg-gray-800 text-white shadow-lg transform transition-transform duration-300 z-40 ${
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         } md:relative md:translate-x-0`}
       >
@@ -144,7 +144,7 @@ export default function AdminSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700 bg-gray-950 space-y-3">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700 bg-gray-800 space-y-3">
           {/* User Info */}
           <div className="px-4 py-3 bg-gray-800 rounded-lg">
             <p className="text-xs text-gray-400">Usuario</p>
@@ -156,7 +156,7 @@ export default function AdminSidebar() {
           <button
             onClick={async () => {
               await logout()
-              handleNavigation()
+              window.location.href = '/auth/login'
             }}
             className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-950/20 transition"
           >

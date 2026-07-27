@@ -45,7 +45,6 @@ export default function LoginPage() {
 
       await login(email, password)
       toast.success('¡Bienvenido!')
-      router.push('/')
     } catch (error: any) {
       // Mensajes de error específicos
       const errorCode = error.code || ''

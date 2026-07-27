@@ -82,7 +82,7 @@ export default function AdminSidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen w-64 bg-gray-800 text-white shadow-lg transform transition-transform duration-300 z-40 ${
+        className={`fixed left-0 top-0 h-screen w-64 bg-gray-700 text-white shadow-lg transform transition-transform duration-300 z-40 ${
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         } md:relative md:translate-x-0`}
       >
@@ -111,7 +111,7 @@ export default function AdminSidebar() {
               {/* Category Header */}
               <button
                 onClick={() => toggleCategory(category.title)}
-                className="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-800 transition text-sm font-medium text-gray-300 hover:text-white"
+                className="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-600 transition text-sm font-medium text-gray-300 hover:text-white"
               >
                 <div className="flex items-center gap-2">
                   {category.icon}
@@ -135,7 +135,7 @@ export default function AdminSidebar() {
                       className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition text-left ${
                         isActive(item.href)
                           ? 'bg-green-600 text-white'
-                          : 'text-gray-400 hover:text-white hover:bg-gray-800'
+                          : 'text-gray-400 hover:text-white hover:bg-gray-600'
                       }`}
                     >
                       {item.icon}
@@ -149,7 +149,7 @@ export default function AdminSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700 bg-gray-800 space-y-3">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-600 bg-gray-700 space-y-3">
           {/* User Info */}
           <div className="px-4 py-3 bg-gray-800 rounded-lg">
             <p className="text-xs text-gray-400">Usuario</p>

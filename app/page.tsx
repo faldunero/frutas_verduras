@@ -11,11 +11,11 @@ export default function Home() {
     <div className="space-y-12">
       {/* Hero Section - Solo si NO está logeado */}
       {!isAuthenticated && <section
-        className="relative overflow-hidden h-96"
+        className="relative overflow-hidden h-[500px]"
         style={{
           backgroundImage: 'url("/images/banner-hero.png")',
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundPosition: 'center bottom',
           backgroundAttachment: 'fixed'
         }}
       />}

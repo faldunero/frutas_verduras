@@ -11,14 +11,22 @@ export default function Home() {
     <div>
       {/* Hero Section - Solo si NO está logeado */}
       {!isAuthenticated && <section
-        className="relative overflow-hidden h-screen"
+        className="relative overflow-hidden h-[80vh] flex items-end justify-center pb-12"
         style={{
-          backgroundImage: 'url("/images/banner-hero.png")',
+          backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.5) 100%), url("/images/banner-hero.png")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundAttachment: 'scroll'
         }}
-      />}
+      >
+        <button
+          onClick={() => window.location.href = '/catalogo'}
+          className="bg-green-700 hover:bg-green-800 text-white px-12 py-4 rounded-full font-bold text-lg flex items-center gap-2 transition shadow-lg"
+        >
+          🛒 COMPRA AHORA
+          <span>→</span>
+        </button>
+      </section>}
 
       <div className="space-y-12">
 

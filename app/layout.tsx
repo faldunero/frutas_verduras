@@ -33,6 +33,7 @@ export default function RootLayout({
 }) {
   const pathname = usePathname()
   const isAdmin = pathname.startsWith('/admin')
+  const isHome = pathname === '/'
 
   return (
     <html lang="es">
@@ -40,11 +41,11 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-gray-50`}
       >
         <ConfigProvider>
-          {!isAdmin && <Header />}
+          {!isAdmin && !isHome && <Header />}
           <main className={isAdmin ? '' : 'min-h-screen'}>
             {children}
           </main>
-          {!isAdmin && <Footer />}
+          {!isAdmin && !isHome && <Footer />}
           <Toaster
             position="bottom-right"
             toastOptions={{

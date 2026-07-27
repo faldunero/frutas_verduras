@@ -9,12 +9,6 @@ import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { FiSearch } from 'react-icons/fi'
 
-const emojis: { [key: string]: string } = {
-  frutas: '🍎',
-  verduras: '',
-  organico: '',
-  otro: '',
-}
 
 export default function CatalogoPage() {
   const { config } = useConfig()
@@ -39,7 +33,7 @@ export default function CatalogoPage() {
 
       const coincidePrecio = p.precio >= precioMin && p.precio <= precioMax
 
-      const coincideDisponibilidad = !soloDisponibles || (p.disponible && p.stock > 0)
+      const coincideDisponibilidad = !soloDisponibles || (p.disponible && p.unidades > 0)
 
       return coincideBusqueda && coincidePrecio && coincideDisponibilidad
     })
@@ -314,16 +308,23 @@ export default function CatalogoPage() {
                   </div>
                 </Link>
 
-                {producto.stock > 0 && (
-                  <div className="p-4 pt-0">
+                <div className="p-4 pt-0">
+                  {producto.unidades > 0 ? (
                     <button
                       onClick={() => handleAgregar(producto)}
                       className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition font-medium"
                     >
                       Agregar
                     </button>
-                  </div>
-                )}
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full bg-gray-400 text-white px-3 py-2 rounded cursor-not-allowed font-medium"
+                    >
+                      Fuera de stock
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>

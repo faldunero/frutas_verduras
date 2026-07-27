@@ -157,7 +157,7 @@ export default function CheckoutPage() {
             throw new Error(`Producto ${item.nombre} no encontrado`)
           }
 
-          const stockDisponible = productoDoc.data().stock || 0
+          const stockDisponible = productoDoc.data().unidades || 0
           if (stockDisponible < item.cantidad) {
             throw new Error(
               `Stock insuficiente para ${item.nombre}. Disponible: ${stockDisponible}, Solicitado: ${item.cantidad}`
@@ -271,7 +271,7 @@ export default function CheckoutPage() {
               console.log(`Actualizando stock de ${item.nombre} (${item.id}): -${item.cantidad}`)
               const productoRef = doc(db, 'productos', item.id)
               await updateDoc(productoRef, {
-                stock: increment(-item.cantidad),
+                unidades: increment(-item.cantidad),
               })
               console.log(`✅ Stock actualizado para ${item.nombre}`)
             } catch (error) {

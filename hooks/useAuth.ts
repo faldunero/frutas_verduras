@@ -76,8 +76,6 @@ export function useAuth() {
           createdAt: new Date(),
         })
       }
-
-      router.push('/auth/login')
     } catch (error: any) {
       throw new Error(error.message || 'Error al registrarse')
     }

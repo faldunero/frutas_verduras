@@ -149,7 +149,7 @@ export default function AdminSidebar() {
           <div className="px-4 py-3 bg-gray-800 rounded-lg">
             <p className="text-xs text-gray-400">Usuario</p>
             <p className="text-sm font-medium text-white truncate">{user?.email?.split('@')[0]}</p>
-            <p className="text-xs text-green-400 font-semibold mt-1">👑 Administrador</p>
+            <p className="text-xs text-green-400 font-semibold mt-1">Administrador</p>
           </div>
 
           {/* Logout Button */}

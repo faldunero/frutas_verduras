@@ -11,7 +11,7 @@ export default function Home() {
     <div>
       {/* Hero Section - Solo si NO está logeado */}
       {!isAuthenticated && <section
-        className="relative overflow-hidden h-[80vh] flex items-center justify-center"
+        className="relative overflow-hidden h-[80vh] flex flex-col items-center justify-start pt-32"
         style={{
           backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.5) 100%), url("/images/banner-hero.png")',
           backgroundSize: 'cover',

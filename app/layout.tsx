@@ -1,3 +1,5 @@
+'use client'
+
 import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
@@ -5,6 +7,7 @@ import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
 import { Toaster } from 'react-hot-toast'
 import { ConfigProvider } from '@/lib/ConfigContext'
+import { usePathname } from 'next/navigation'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -28,17 +31,20 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const pathname = usePathname()
+  const isAdmin = pathname.startsWith('/admin')
+
   return (
     <html lang="es">
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased bg-gray-50`}
       >
         <ConfigProvider>
-          <Header />
-          <main className="min-h-screen">
+          {!isAdmin && <Header />}
+          <main className={isAdmin ? '' : 'min-h-screen'}>
             {children}
           </main>
-          <Footer />
+          {!isAdmin && <Footer />}
           <Toaster
             position="bottom-right"
             toastOptions={{

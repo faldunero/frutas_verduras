@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FiMenu, FiX, FiChevronDown, FiBarChart3, FiBox, FiDollarSign, FiSettings, FiActivity, FiShoppingCart, FiTrendingUp, FiUsers, FiSliders } from 'react-icons/fi'
+import { FiMenu, FiX, FiChevronDown, FiBarChart2, FiBox, FiDollarSign, FiSettings, FiActivity, FiShoppingCart, FiTrendingUp, FiUsers, FiSliders } from 'react-icons/fi'
 
 interface MenuItem {
   label: string
@@ -20,9 +20,9 @@ interface MenuCategory {
 const menuCategories: MenuCategory[] = [
   {
     title: 'Dashboard',
-    icon: <FiBarChart3 size={20} />,
+    icon: <FiBarChart2 size={20} />,
     items: [
-      { label: 'Dashboard', href: '/admin/dashboard', icon: <FiBarChart3 size={18} /> },
+      { label: 'Dashboard', href: '/admin/dashboard', icon: <FiBarChart2 size={18} /> },
       { label: 'Observabilidad', href: '/admin/observabilidad', icon: <FiActivity size={18} /> },
     ],
   },

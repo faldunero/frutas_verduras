@@ -139,16 +139,16 @@ export function Header() {
                   )}
                 </div>
               ) : (
-                <div className="hidden sm:flex gap-2">
+                <div className="hidden sm:flex gap-1">
                   <Link
                     href="/auth/login"
-                    className="px-3 py-2 bg-white text-green-600 rounded font-semibold hover:bg-green-50 transition text-sm"
+                    className="px-2 py-1.5 bg-white text-green-600 rounded font-semibold hover:bg-green-50 transition text-xs"
                   >
                     Ingresar
                   </Link>
                   <Link
                     href="/auth/register"
-                    className="px-3 py-2 bg-green-500 hover:bg-green-400 rounded font-semibold transition text-sm"
+                    className="px-2 py-1.5 bg-green-500 hover:bg-green-400 rounded font-semibold transition text-xs"
                   >
                     Registrar
                   </Link>

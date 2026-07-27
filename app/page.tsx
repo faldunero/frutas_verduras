@@ -11,7 +11,7 @@ export default function Home() {
     <div>
       {/* Hero Section - Solo si NO está logeado */}
       {!isAuthenticated && <section
-        className="relative overflow-hidden h-[80vh] flex flex-col items-center justify-start pt-32"
+        className="relative overflow-hidden h-[80vh]"
         style={{
           backgroundImage: 'linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.5) 100%), url("/images/banner-hero.png")',
           backgroundSize: 'cover',
@@ -21,7 +21,7 @@ export default function Home() {
       >
         <button
           onClick={() => window.location.href = '/catalogo'}
-          className="bg-green-700 hover:bg-green-800 text-white px-12 py-4 rounded-full font-bold text-lg transition shadow-lg"
+          className="absolute bottom-12 left-12 bg-green-700 hover:bg-green-800 text-white px-12 py-4 rounded-full font-bold text-lg transition shadow-lg"
         >
           COMPRA AHORA
         </button>

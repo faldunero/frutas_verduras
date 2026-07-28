@@ -290,12 +290,12 @@ export default function ProductosPage() {
                         <td className="px-6 py-4 text-gray-900">
                           <span
                             className={`px-3 py-1 rounded text-sm font-medium ${
-                              producto.stock > 0
+                              producto.unidades > 0
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-red-100 text-red-800'
                             }`}
                           >
-                            {producto.stock}
+                            {producto.unidades}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-gray-900 capitalize text-sm">

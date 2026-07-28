@@ -164,7 +164,7 @@ export default function CatalogoPage() {
                       className="w-4 h-4 text-green-600"
                     />
                     <span className="ml-2 text-gray-700 capitalize">
-                      {cat === 'todos' ? 'Todos' : `${emojis[cat] || ''} ${cat.charAt(0).toUpperCase() + cat.slice(1)}`}
+                      {cat === 'todos' ? 'Todos' : cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </span>
                   </label>
                 ))}
@@ -288,15 +288,15 @@ export default function CatalogoPage() {
                     <p className="text-gray-500 text-xs mb-3">Peso: {producto.peso}</p>
 
                     <div className="mt-auto">
-                      {producto.stock > 0 ? (
+                      {producto.unidades > 0 ? (
                         <div className="flex justify-between items-center">
                           <span className="text-green-600 font-bold text-lg">
                             ${producto.precio.toLocaleString('es-CL')}
                           </span>
                           <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
                             {producto.unidadVenta === 'kilo'
-                              ? `Kilos: ${producto.stock}`
-                              : `Unidades: ${producto.stock}`}
+                              ? `Kilos: ${producto.unidades}`
+                              : `Unidades: ${producto.unidades}`}
                           </span>
                         </div>
                       ) : (

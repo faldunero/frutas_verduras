@@ -187,7 +187,7 @@ export default function NuevoProductoPage() {
                   <input
                     type="number"
                     name="stock"
-                    value={formData.stock}
+                    value={formData.unidades}
                     onChange={handleChange}
                     required
                     min="0"

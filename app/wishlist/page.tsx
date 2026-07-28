@@ -68,14 +68,14 @@ export default function WishlistPage() {
                     ${producto.precio.toLocaleString('es-CL')}
                   </span>
                   <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                    Stock: {producto.stock}
+                    Stock: {producto.unidades}
                   </span>
                 </div>
 
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleAgregar(producto)}
-                    disabled={producto.stock === 0}
+                    disabled={producto.unidades === 0}
                     className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-3 py-2 rounded text-sm font-medium flex items-center justify-center gap-2"
                   >
                     <FiShoppingCart size={16}/>

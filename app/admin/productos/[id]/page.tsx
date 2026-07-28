@@ -230,7 +230,7 @@ export default function EditarProductoPage() {
                   <input
                     type="number"
                     name="stock"
-                    value={formData.stock}
+                    value={formData.unidades}
                     onChange={handleChange}
                     required
                     min="0"

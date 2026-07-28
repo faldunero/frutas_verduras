@@ -163,15 +163,15 @@ export default function ProductoPage() {
               <p className="text-gray-700 mb-4">{producto.descripcion}</p>
               <div className="space-y-2 mb-6 text-sm text-gray-600">
                 <p><strong>Peso:</strong> {producto.peso}</p>
-                <p><strong>Stock:</strong> {producto.stock}</p>
+                <p><strong>Stock:</strong> {producto.unidades}</p>
               </div>
               <p className="text-4xl font-bold text-green-600 mb-6">${producto.precio.toLocaleString()}</p>
               <button
                 onClick={() => { addItem(producto, 1); toast.success('Agregado al carrito')}}
-                disabled={producto.stock === 0}
+                disabled={producto.unidades === 0}
                 className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg"
               >
-                {producto.stock > 0 ? 'Agregar al Carrito' : 'Sin Stock'}
+                {producto.unidades > 0 ? 'Agregar al Carrito' : 'Sin Stock'}
               </button>
             </div>
           </div>

@@ -276,7 +276,7 @@ export default function PrecargaPage() {
                     <td className="px-4 py-2">
                       <input
                         type="number"
-                        value={producto.stock}
+                        value={producto.unidades}
                         onChange={(e) => handleCambio(index, 'stock', Number(e.target.value))}
                         className="w-full px-2 py-1 border rounded text-xs"
                       />

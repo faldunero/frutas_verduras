@@ -137,7 +137,7 @@ export default function ProductoPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-6xl mx-auto px-4">
-        <Link href="/catalogo" className="text-green-600 font-medium mb-8 inline-block">← Volver al catálogo</Link>
+        <button onClick={() => window.location.href = '/catalogo'} className="text-green-600 font-medium mb-8 inline-block hover:underline bg-transparent border-0 p-0">← Volver al catálogo</button>
         <div className="bg-white rounded-lg shadow-lg p-8 mb-12">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
@@ -163,15 +163,15 @@ export default function ProductoPage() {
               <p className="text-gray-700 mb-4">{producto.descripcion}</p>
               <div className="space-y-2 mb-6 text-sm text-gray-600">
                 <p><strong>Peso:</strong> {producto.peso}</p>
-                <p><strong>Stock:</strong> {producto.unidades}</p>
+                <p><strong>Stock:</strong> {producto.unidades || producto.stock || 0}</p>
               </div>
               <p className="text-4xl font-bold text-green-600 mb-6">${producto.precio.toLocaleString()}</p>
               <button
                 onClick={() => { addItem(producto, 1); toast.success('Agregado al carrito')}}
-                disabled={producto.unidades === 0}
+                disabled={(producto.unidades || producto.stock || 0) <= 0}
                 className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg"
               >
-                {producto.unidades > 0 ? 'Agregar al Carrito' : 'Sin Stock'}
+                {(producto.unidades || producto.stock || 0) > 0 ? 'Agregar al Carrito' : 'Fuera de Stock'}
               </button>
             </div>
           </div>

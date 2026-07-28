@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase'
-import { doc, getDoc, updateDoc, increment } from 'firebase/firestore'
+import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
@@ -20,33 +20,31 @@ export async function POST(req: Request) {
 
     const orden = ordenSnap.data()
 
+    // Verificar estado
+    if (orden.estado === 'pagada') {
+      return NextResponse.json({ error: 'Orden ya fue pagada' }, { status: 400 })
+    }
+
+    if (orden.estado === 'cancelada') {
+      return NextResponse.json({ error: 'Orden está cancelada' }, { status: 400 })
+    }
+
     // Verificar que la orden aún está dentro del tiempo de reserva
     if (orden.reservadoHasta && new Date() > orden.reservadoHasta.toDate?.()) {
       return NextResponse.json({ error: 'Reserva expirada' }, { status: 400 })
     }
 
-    // Descontar stock de cada producto
-    for (const item of orden.items || []) {
-      try {
-        const productoRef = doc(db, 'productos', item.productoId)
-        await updateDoc(productoRef, {
-          unidades: increment(-item.cantidad),
-          stock: increment(-item.cantidad),
-        })
-      } catch (error) {
-        console.error(`Error descontando stock para ${item.productoId}:`, error)
-        throw error
-      }
-    }
+    // NOTA: El stock YA fue decrementado cuando se agregó al carrito
+    // Aquí solo marcamos la orden como pagada
 
-    // Actualizar estado de la orden
+    // Actualizar estado de la orden a pagada
     await updateDoc(ordenRef, {
       estado: 'pagada',
       pagadoEn: new Date(),
     })
 
-    console.log(`✅ Orden ${ordenId} confirmada y stock descontado`)
-    return NextResponse.json({ success: true, message: 'Orden confirmada' })
+    console.log(`✅ Orden ${ordenId} confirmada como pagada`)
+    return NextResponse.json({ success: true, message: 'Pago confirmado' })
   } catch (error) {
     console.error('Error confirmando pago:', error)
     return NextResponse.json({ error: 'Error al confirmar pago' }, { status: 500 })

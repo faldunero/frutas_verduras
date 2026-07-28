@@ -8,6 +8,7 @@ import { useConfig } from '@/hooks/useConfig'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { FiSearch } from 'react-icons/fi'
+import { StockBadge } from '@/components/StockBadge'
 
 
 export default function CatalogoPage() {
@@ -100,6 +101,16 @@ export default function CatalogoPage() {
 
   const handleConfirmarAgregar = () => {
     if (!selectedProduct) return
+
+    // Validar que hay suficiente stock
+    const stockActual = (selectedProduct.unidades || selectedProduct.stock || 0) as number
+    if (cantidadSeleccionada > stockActual) {
+      toast.error(
+        `Stock insuficiente. Disponible: ${stockActual}, Solicitado: ${cantidadSeleccionada}`
+      )
+      return
+    }
+
     addItem(selectedProduct, cantidadSeleccionada)
     toast.success(`${selectedProduct.nombre} agregado al carrito`)
     setSelectedProduct(null)
@@ -287,16 +298,12 @@ export default function CatalogoPage() {
                     <p className="text-gray-500 text-xs mb-3">Peso: {producto.peso}</p>
 
                     <div className="mt-auto">
-                      {producto.unidades > 0 ? (
+                      {(producto.unidades || producto.stock || 0) > 0 ? (
                         <div className="flex justify-between items-center">
                           <span className="text-green-600 font-bold text-lg">
                             ${producto.precio.toLocaleString('es-CL')}
                           </span>
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                            {producto.unidadVenta === 'kilo'
-                              ? `Kilos: ${producto.unidades}`
-                              : `Unidades: ${producto.unidades}`}
-                          </span>
+                          <StockBadge producto={producto} />
                         </div>
                       ) : (
                         <div className="text-center py-2 bg-gray-100 rounded text-gray-600 font-medium">

@@ -129,6 +129,28 @@ export default function PedidosPage() {
     )
   }
 
+  const handleConfirmarPago = async (ordenId: string) => {
+    try {
+      const response = await fetch('/api/confirmar-pago-orden', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ordenId }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        toast.success('Pago confirmado - Stock descontado')
+        loadOrdenes() // Recargar órdenes
+      } else {
+        toast.error(data.error || 'Error al confirmar pago')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error('Error al confirmar pago')
+    }
+  }
+
   const ordenesFiltradas = ordenes
     .filter((o) => (filtro === 'todos' ? true : o.estado === filtro))
     .filter((o) => {
@@ -341,13 +363,26 @@ export default function PedidosPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Estado</p>
-                    <p
-                      className={`font-bold px-3 py-1 rounded-full text-sm w-fit ${
-                        statusColors[orden.estado]
-                      }`}
-                    >
-                      {statusLabels[orden.estado]}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p
+                        className={`font-bold px-3 py-1 rounded-full text-sm w-fit ${
+                          statusColors[orden.estado]
+                        }`}
+                      >
+                        {statusLabels[orden.estado]}
+                      </p>
+                      {orden.estado === 'pendiente' && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            handleConfirmarPago(orden.id)
+                          }}
+                          className="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transition"
+                        >
+                          Confirmar Pago
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Fecha</p>

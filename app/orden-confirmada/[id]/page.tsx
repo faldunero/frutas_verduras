@@ -121,7 +121,7 @@ export default function OrdenConfirmadaPage() {
             </p>
             <div className="bg-white p-3 rounded text-sm space-y-1">
               <p>
-                <strong>Monto:</strong> ${orden.total.toLocaleString('es-CL')}
+                <strong>Monto:</strong> ${(orden.total || 0).toLocaleString('es-CL')}
               </p>
               <p>
                 <strong>Banco:</strong> [Tu banco]
@@ -195,10 +195,10 @@ export default function OrdenConfirmadaPage() {
                   </div>
                   <div className="text-right">
                     <p className="font-medium">
-                      ${item.precioUnitario.toLocaleString('es-CL')}
+                      ${(item.precioUnitario || 0).toLocaleString('es-CL')}
                     </p>
                     <p className="text-sm text-gray-600">
-                      ${item.subtotal.toLocaleString('es-CL')}
+                      ${(item.subtotal || 0).toLocaleString('es-CL')}
                     </p>
                   </div>
                 </div>
@@ -211,14 +211,14 @@ export default function OrdenConfirmadaPage() {
             <div className="flex justify-between">
               <span className="text-gray-700">Subtotal:</span>
               <span className="font-medium">
-                ${orden.subtotal.toLocaleString('es-CL')}
+                ${(orden.subtotal || 0).toLocaleString('es-CL')}
               </span>
             </div>
-            {orden.impuestos > 0 && (
+            {(orden.impuestos || 0) > 0 && (
               <div className="flex justify-between">
                 <span className="text-gray-700">Impuestos (19%):</span>
                 <span className="font-medium">
-                  ${orden.impuestos.toLocaleString('es-CL')}
+                  ${(orden.impuestos || 0).toLocaleString('es-CL')}
                 </span>
               </div>
             )}
@@ -229,7 +229,7 @@ export default function OrdenConfirmadaPage() {
             <div className="flex justify-between text-lg font-bold pt-2 border-t">
               <span>Total:</span>
               <span className="text-green-600">
-                ${orden.total.toLocaleString('es-CL')}
+                ${(orden.total || 0).toLocaleString('es-CL')}
               </span>
             </div>
           </div>

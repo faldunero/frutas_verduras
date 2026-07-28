@@ -14,8 +14,11 @@ export function useCartOrder() {
 
   // Sincronizar carrito con orden en Firebase
   useEffect(() => {
+    console.log('[useCartOrder] Auth state:', { isAuthenticated, userId: user?.uid, itemsCount: items.length })
+
     if (!isAuthenticated || !user?.uid) {
       // Limpiar orden si se desautentica
+      console.log('[useCartOrder] Clearing order - not authenticated')
       setOrdenId(null)
       return
     }
@@ -23,10 +26,12 @@ export function useCartOrder() {
     const syncCartToOrder = async () => {
       try {
         setSyncing(true)
+        console.log('[useCartOrder] Syncing cart to order:', { itemsCount: items.length, ordenId })
 
         // Si no hay items, eliminar orden
         if (items.length === 0) {
           if (ordenId) {
+            console.log('[useCartOrder] Deleting empty order:', ordenId)
             await deleteDoc(doc(db, 'ordenes', ordenId))
             setOrdenId(null)
           }
@@ -54,18 +59,23 @@ export function useCartOrder() {
         // Si hay orden existente, actualizar; si no, crear con documento personalizado
         if (ordenId) {
           // Actualizar orden existente
+          console.log('[useCartOrder] Updating existing order:', ordenId)
           await setDoc(doc(db, 'ordenes', ordenId), ordenData, { merge: true })
+          console.log('[useCartOrder] Order updated successfully')
         } else {
           // Crear nueva orden con ID personalizado basado en timestamp + user
           const newOrdenId = `${user.uid}_${Date.now()}`
+          console.log('[useCartOrder] Creating new order:', newOrdenId)
           await setDoc(doc(db, 'ordenes', newOrdenId), {
             ...ordenData,
             createdAt: serverTimestamp(),
           })
+          console.log('[useCartOrder] Order created successfully:', newOrdenId)
           setOrdenId(newOrdenId)
         }
-      } catch (error) {
-        console.error('Error sincronizando carrito con orden:', error)
+      } catch (error: any) {
+        console.error('[useCartOrder] Error sincronizando carrito con orden:', error)
+        console.error('[useCartOrder] Error details:', error.message, error.code)
       } finally {
         setSyncing(false)
       }

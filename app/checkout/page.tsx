@@ -169,6 +169,9 @@ export default function CheckoutPage() {
       }
 
       // Crear la orden en Firestore
+      // Calcular tiempo de expiración de reserva (30 minutos)
+      const reservadoHasta = new Date(Date.now() + 30 * 60 * 1000)
+
       const ordenData = {
         userId: user?.uid,
         email: formData.email,
@@ -192,6 +195,7 @@ export default function CheckoutPage() {
           subtotal: item.precio * item.cantidad,
         })),
         comentarios: formData.comentarios,
+        reservadoHasta, // Reserva por 30 minutos
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       }
@@ -264,22 +268,7 @@ export default function CheckoutPage() {
             throw new Error('Error al iniciar transacción con Transbank')
           }
 
-          // Solo si Transbank fue exitoso, actualizar stock y limpiar carrito
-          console.log('Actualizando stock para', items.length, 'productos')
-          for (const item of items) {
-            try {
-              console.log(`Actualizando stock de ${item.nombre} (${item.id}): -${item.cantidad}`)
-              const productoRef = doc(db, 'productos', item.id)
-              await updateDoc(productoRef, {
-                unidades: increment(-item.cantidad),
-                stock: increment(-item.cantidad),
-              })
-              console.log(`✅ Stock actualizado para ${item.nombre}`)
-            } catch (error) {
-              console.error(`❌ Error updating stock for ${item.id}:`, error)
-            }
-          }
-
+          // Stock se descuenta solo cuando se CONFIRMA el pago
           clearCart()
 
           // Redirigir a Transbank
@@ -289,29 +278,12 @@ export default function CheckoutPage() {
           throw error
         }
       } else {
-        // Actualizar stock de productos
-        console.log('Actualizando stock para', items.length, 'productos')
-        for (const item of items) {
-          try {
-            console.log(`Actualizando stock de ${item.nombre} (${item.id}): -${item.cantidad}`)
-            const productoRef = doc(db, 'productos', item.id)
-            await updateDoc(productoRef, {
-              unidades: increment(-item.cantidad),
-              stock: increment(-item.cantidad),
-            })
-            console.log(`✅ Stock actualizado para ${item.nombre}`)
-          } catch (error) {
-            console.error(`❌ Error updating stock for ${item.id}:`, error)
-            toast.error(`Error actualizando stock de ${item.nombre}`)
-          }
-        }
-
-        // Limpiar carrito
+        // Stock se descuenta solo cuando se CONFIRMA el pago
         clearCart()
 
         // Si es transferencia, redirigir a confirmación
         router.push(`/orden-confirmada/${docRef.id}`)
-        toast.success('Orden creada - Pendiente de pago por transferencia')
+        toast.success('Orden creada - Pendiente de pago por transferencia. Reserva válida por 30 minutos.')
       }
     } catch (error) {
       console.error('Error creating orden:', error)

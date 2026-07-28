@@ -33,7 +33,8 @@ export default function CatalogoPage() {
 
       const coincidePrecio = p.precio >= precioMin && p.precio <= precioMax
 
-      const coincideDisponibilidad = !soloDisponibles || (p.disponible && p.unidades > 0)
+      const cantidadDisponible = (p.unidades || p.stock || 0) as number
+      const coincideDisponibilidad = !soloDisponibles || (p.disponible && cantidadDisponible > 0)
 
       return coincideBusqueda && coincidePrecio && coincideDisponibilidad
     })
@@ -308,7 +309,7 @@ export default function CatalogoPage() {
                 </Link>
 
                 <div className="p-4 pt-0">
-                  {producto.unidades > 0 ? (
+                  {(producto.unidades || producto.stock || 0) > 0 ? (
                     <button
                       onClick={() => handleAgregar(producto)}
                       className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition font-medium"

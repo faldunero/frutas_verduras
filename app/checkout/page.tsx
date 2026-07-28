@@ -157,7 +157,7 @@ export default function CheckoutPage() {
             throw new Error(`Producto ${item.nombre} no encontrado`)
           }
 
-          const stockDisponible = productoDoc.data().unidades || 0
+          const stockDisponible = productoDoc.data().unidades || productoDoc.data().stock || 0
           if (stockDisponible < item.cantidad) {
             throw new Error(
               `Stock insuficiente para ${item.nombre}. Disponible: ${stockDisponible}, Solicitado: ${item.cantidad}`

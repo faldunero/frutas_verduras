@@ -17,7 +17,7 @@ interface Producto {
   descripcion: string
   disponible: boolean
   destacado: boolean
-  stock: number
+  unidades: number
   updatedAt?: any
 }
 

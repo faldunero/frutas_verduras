@@ -60,7 +60,7 @@ export default function EditarProductoPage() {
       prev
         ? {
             ...prev,
-            [name]: name === 'precio' || name === 'stock' ? parseFloat(value) : val,
+            [name]: name === 'precio' || name === 'unidades' ? parseFloat(value) : val,
           }
         : null
     )

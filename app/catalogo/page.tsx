@@ -34,7 +34,7 @@ export default function CatalogoPage() {
       const coincidePrecio = p.precio >= precioMin && p.precio <= precioMax
 
       const cantidadDisponible = (p.unidades || p.stock || 0) as number
-      const coincideDisponibilidad = !soloDisponibles || (p.disponible && cantidadDisponible > 0)
+      const coincideDisponibilidad = !soloDisponibles || cantidadDisponible > 0
 
       return coincideBusqueda && coincidePrecio && coincideDisponibilidad
     })
@@ -75,12 +75,11 @@ export default function CatalogoPage() {
     // Listener en tiempo real
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       try {
-        const allData = querySnapshot.docs
+        const data = querySnapshot.docs
           .map((doc) => ({
             id: doc.id,
             ...(doc.data() as any),
           })) as (Producto & { id: string })[]
-        const data = allData.filter((p) => p.disponible === true)
         setProductos(data)
         setLoading(false)
       } catch (error) {

@@ -19,14 +19,25 @@ export async function POST(req: Request) {
       const unidades = data.unidades
       const stock = data.stock
 
-      // Si unidades no existe o es 0, pero stock existe y tiene valor
-      if ((!unidades || unidades === 0) && stock && stock !== 0) {
+      // Si unidades no existe o es 0, pero stock existe y tiene valor (positivo)
+      if ((!unidades || unidades === 0) && stock && stock !== 0 && stock > 0) {
         cambios.push({
           id: docSnap.id,
           nombre: data.nombre,
           accion: 'copiar stock → unidades',
           de: { unidades, stock },
           a: { unidades: stock, stock: null }
+        })
+        migrando++
+      }
+      // Si unidades no existe o es 0, pero stock es negativo → poner 0
+      else if ((!unidades || unidades === 0) && stock && stock < 0) {
+        cambios.push({
+          id: docSnap.id,
+          nombre: data.nombre,
+          accion: 'stock negativo → unidades: 0',
+          de: { unidades, stock },
+          a: { unidades: 0, stock: null }
         })
         migrando++
       }
@@ -71,9 +82,14 @@ export async function POST(req: Request) {
       try {
         const updateData: any = {}
 
-        // Si stock tiene valor y unidades no, copiar stock
+        // Si stock tiene valor y unidades no, copiar stock (si es positivo)
         if ((!cambio.de.unidades || cambio.de.unidades === 0) && cambio.de.stock) {
-          updateData.unidades = cambio.de.stock
+          if (cambio.de.stock > 0) {
+            updateData.unidades = cambio.de.stock
+          } else {
+            // Si stock es negativo, poner 0
+            updateData.unidades = 0
+          }
         }
 
         // Remover stock (siempre)

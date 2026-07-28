@@ -2,287 +2,279 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
 import { db } from '@/lib/firebase'
-import { collection, onSnapshot, query, orderBy, limit, getDocs } from 'firebase/firestore'
+import { collection, query, onSnapshot, where, orderBy, limit } from 'firebase/firestore'
 import Link from 'next/link'
-import { FiArrowLeft, FiActivity, FiAlertCircle, FiCheckCircle, FiClock, FiTrendingUp } from 'react-icons/fi'
+import { FiArrowLeft, FiAlertTriangle, FiClock, FiCheckCircle } from 'react-icons/fi'
+import toast from 'react-hot-toast'
 
-interface SystemEvent {
+interface Orden {
   id: string
-  type: 'orden' | 'usuario' | 'error' | 'api'
-  message: string
-  timestamp: any
-  severity: 'info' | 'warning' | 'error'
-  data?: any
+  nombre: string
+  email: string
+  total: number
+  estado: string
+  items: any[]
+  createdAt: any
+  reservadoHasta?: any
+}
+
+interface Producto {
+  id: string
+  nombre: string
+  unidades: number
+  stock: number
 }
 
 export default function ObservabilidadPage() {
   const { isAdmin } = useAuth()
-  const [systemEvents, setSystemEvents] = useState<SystemEvent[]>([])
+  const router = useRouter()
+  const [ordenesPendientes, setOrdenesPendientes] = useState<Orden[]>([])
+  const [ordenesPagadas, setOrdenesPagadas] = useState<Orden[]>([])
+  const [stockBajo, setStockBajo] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
-  const [healthStatus, setHealthStatus] = useState({
-    app: 'healthy',
-    database: 'healthy',
-    api: 'healthy',
-  })
-  const [stats, setStats] = useState({
-    ordenes: 0,
-    usuarios: 0,
-    errores24h: 0,
-    uptime: '99.9%',
-  })
 
   useEffect(() => {
-    if (!isAdmin) return
+    if (!isAdmin) {
+      router.push('/auth/login')
+      return
+    }
 
-    checkHealth()
+    const qPendiente = query(
+      collection(db, 'ordenes'),
+      where('estado', '==', 'pendiente'),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    )
 
-    const ordenesQuery = query(collection(db, 'ordenes'), orderBy('createdAt', 'desc'), limit(10))
-    const unsubscribeOrdenes = onSnapshot(
-      ordenesQuery,
+    const unsubPendiente = onSnapshot(
+      qPendiente,
       (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          if (change.type === 'added') {
-            addEvent({
-              type: 'orden',
-              message: `Nueva orden: ${change.doc.data().nombre}`,
-              severity: 'info',
-              data: change.doc.data(),
-            })
-          }
-        })
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Orden[]
+        setOrdenesPendientes(data)
       },
       (error) => {
-        addEvent({
-          type: 'error',
-          message: `Error en listener de órdenes: ${error.message}`,
-          severity: 'error',
-        })
+        console.error('Error órdenes pendientes:', error)
+        toast.error('Error al cargar órdenes pendientes')
       }
     )
 
-    const usuariosQuery = query(collection(db, 'users'), orderBy('createdAt', 'desc'), limit(10))
-    const unsubscribeUsuarios = onSnapshot(
-      usuariosQuery,
+    const qPagada = query(
+      collection(db, 'ordenes'),
+      where('estado', '==', 'pagada'),
+      orderBy('createdAt', 'desc'),
+      limit(10)
+    )
+
+    const unsubPagada = onSnapshot(
+      qPagada,
       (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
-          if (change.type === 'added') {
-            addEvent({
-              type: 'usuario',
-              message: `Nuevo usuario: ${change.doc.data().email}`,
-              severity: 'info',
-              data: change.doc.data(),
-            })
-          }
-        })
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Orden[]
+        setOrdenesPagadas(data)
       },
       (error) => {
-        addEvent({
-          type: 'error',
-          message: `Error en listener de usuarios: ${error.message}`,
-          severity: 'error',
-        })
+        console.error('Error órdenes pagadas:', error)
+        toast.error('Error al cargar órdenes pagadas')
       }
     )
 
-    loadStats()
-    setLoading(false)
+    const qProductos = query(collection(db, 'productos'))
+    const unsubProductos = onSnapshot(
+      qProductos,
+      (snapshot) => {
+        const data = snapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .filter((p: any) => (p.unidades || p.stock || 0) < 5) as Producto[]
+        setStockBajo(data.sort((a, b) => (a.unidades || a.stock || 0) - (b.unidades || b.stock || 0)))
+        setLoading(false)
+      },
+      (error) => {
+        console.error('Error productos:', error)
+        toast.error('Error al cargar productos')
+        setLoading(false)
+      }
+    )
 
     return () => {
-      unsubscribeOrdenes()
-      unsubscribeUsuarios()
+      unsubPendiente()
+      unsubPagada()
+      unsubProductos()
     }
-  }, [isAdmin])
+  }, [isAdmin, router])
 
-  const checkHealth = async () => {
-    try {
-      const apiStart = performance.now()
-      const apiRes = await fetch('https://frutas-verduras.onrender.com', { method: 'HEAD' }).catch(() => ({ ok: false }))
-      const apiTime = performance.now() - apiStart
-
-      setHealthStatus({
-        app: 'healthy',
-        database: 'healthy',
-        api: apiTime < 5000 ? 'healthy' : 'degraded',
-      })
-    } catch (error) {
-      setHealthStatus({ app: 'healthy', database: 'healthy', api: 'degraded' })
-    }
-  }
-
-  const addEvent = (event: Omit<SystemEvent, 'id' | 'timestamp'>) => {
-    const newEvent: SystemEvent = {
-      ...event,
-      id: Date.now().toString(),
-      timestamp: new Date(),
-    }
-    setSystemEvents((prev) => [newEvent, ...prev].slice(0, 50))
-  }
-
-  const loadStats = async () => {
-    try {
-      const ordenesSnap = await getDocs(collection(db, 'ordenes'))
-      const usuariosSnap = await getDocs(collection(db, 'users'))
-
-      setStats({
-        ordenes: ordenesSnap.size,
-        usuarios: usuariosSnap.size,
-        errores24h: 0,
-        uptime: '99.9%',
-      })
-    } catch (error) {
-      console.error('Error loading stats:', error)
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy': return 'text-green-600'
-      case 'degraded': return 'text-yellow-600'
-      case 'unhealthy': return 'text-red-600'
-      default: return 'text-gray-600'
-    }
-  }
-
-  const getStatusBg = (status: string) => {
-    switch (status) {
-      case 'healthy': return 'bg-green-50 border-green-200'
-      case 'degraded': return 'bg-yellow-50 border-yellow-200'
-      case 'unhealthy': return 'bg-red-50 border-red-200'
-      default: return 'bg-gray-50 border-gray-200'
-    }
-  }
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'info': return 'bg-blue-100 text-blue-800'
-      case 'warning': return 'bg-yellow-100 text-yellow-800'
-      case 'error': return 'bg-red-100 text-red-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  if (!isAdmin) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-gray-600">No tienes acceso a esta página</p>
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-green-200 border-t-green-600 rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando observabilidad...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <Link href="/admin" className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 mb-4">
-              <FiArrowLeft /> Volver
-            </Link>
-            <h1 className="text-4xl font-bold text-gray-900"> Observabilidad del Sistema</h1>
-            <p className="text-gray-600 mt-2">Monitoreo en tiempo real de la aplicación</p>
-          </div>
-          <button
-            onClick={checkHealth}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium"
-          >
-            Refrescar
-          </button>
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <Link href="/admin" className="flex items-center text-green-600 hover:text-green-700 mb-4">
+            <FiArrowLeft className="mr-2" /> Volver al admin
+          </Link>
+          <h1 className="text-4xl font-bold">Observabilidad</h1>
+          <p className="text-gray-600 mt-2">Monitoreo en tiempo real de órdenes y stock</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className={`border rounded-lg p-6 ${getStatusBg(healthStatus.app)}`}>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold text-gray-900">Aplicación</h3>
-              <FiActivity className={getStatusColor(healthStatus.app)} />
+        <div className="grid md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">Órdenes Pendientes</p>
+                <p className="text-3xl font-bold text-orange-600">{ordenesPendientes.length}</p>
+              </div>
+              <FiClock className="text-4xl text-orange-200" />
             </div>
-            <p className={`text-sm font-semibold ${getStatusColor(healthStatus.app)}`}>
-              {healthStatus.app.toUpperCase()}
-            </p>
           </div>
 
-          <div className={`border rounded-lg p-6 ${getStatusBg(healthStatus.database)}`}>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold text-gray-900">Base de Datos</h3>
-              <FiCheckCircle className={getStatusColor(healthStatus.database)} />
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">Órdenes Pagadas</p>
+                <p className="text-3xl font-bold text-green-600">{ordenesPagadas.length}</p>
+              </div>
+              <FiCheckCircle className="text-4xl text-green-200" />
             </div>
-            <p className={`text-sm font-semibold ${getStatusColor(healthStatus.database)}`}>
-              {healthStatus.database.toUpperCase()}
-            </p>
           </div>
 
-          <div className={`border rounded-lg p-6 ${getStatusBg(healthStatus.api)}`}>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold text-gray-900">API</h3>
-              <FiTrendingUp className={getStatusColor(healthStatus.api)} />
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">Productos Stock Bajo</p>
+                <p className="text-3xl font-bold text-red-600">{stockBajo.length}</p>
+              </div>
+              <FiAlertTriangle className="text-4xl text-red-200" />
             </div>
-            <p className={`text-sm font-semibold ${getStatusColor(healthStatus.api)}`}>
-              {healthStatus.api.toUpperCase()}
-            </p>
-          </div>
-
-          <div className="border border-green-200 rounded-lg p-6 bg-green-50">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-bold text-gray-900">Uptime</h3>
-              <FiClock className="text-green-600" />
-            </div>
-            <p className="text-sm font-semibold text-green-600">{stats.uptime}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Órdenes Totales</p>
-            <p className="text-3xl font-bold text-gray-900">{stats.ordenes}</p>
+        {stockBajo.length > 0 && (
+          <div className="bg-red-50 border-l-4 border-red-600 rounded-lg p-6 mb-8">
+            <h2 className="text-xl font-bold text-red-900 mb-4">Productos con Stock Bajo (&lt; 5)</h2>
+            <div className="space-y-2">
+              {stockBajo.map((p) => (
+                <div key={p.id} className="flex justify-between items-center bg-white p-3 rounded">
+                  <span className="font-medium">{p.nombre}</span>
+                  <span className="text-red-600 font-bold">{p.unidades || p.stock || 0} disponibles</span>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Usuarios Totales</p>
-            <p className="text-3xl font-bold text-gray-900">{stats.usuarios}</p>
+        )}
+
+        <div className="bg-white rounded-lg shadow mb-8">
+          <div className="border-b p-6">
+            <h2 className="text-2xl font-bold">Órdenes Pendientes</h2>
+            <p className="text-gray-600 text-sm mt-1">Esperando pago</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Eventos Registrados</p>
-            <p className="text-3xl font-bold text-blue-600">{systemEvents.length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-600 text-sm">Listeners Activos</p>
-            <p className="text-3xl font-bold text-green-600">2</p>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">ID Orden</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Cliente</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Total</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Items</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Acción</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {ordenesPendientes.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      Sin órdenes pendientes
+                    </td>
+                  </tr>
+                ) : (
+                  ordenesPendientes.map((orden) => (
+                    <tr key={orden.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <code className="text-xs bg-gray-100 px-2 py-1 rounded">{orden.id.slice(0, 12)}...</code>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="font-medium">{orden.nombre}</p>
+                          <p className="text-sm text-gray-600">{orden.email}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-green-600">${orden.total.toLocaleString('es-CL')}</span>
+                      </td>
+                      <td className="px-6 py-4 text-sm">{orden.items?.length || 0} productos</td>
+                      <td className="px-6 py-4">
+                        <Link href="/admin/pedidos" className="text-green-600 hover:text-green-700 font-medium text-sm">
+                          Ver orden →
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow">
-          <div className="border-b border-gray-200 p-6">
-            <h2 className="text-2xl font-bold text-gray-900"> Log de Eventos en Tiempo Real</h2>
-            <p className="text-gray-600 text-sm mt-1">Últimos {systemEvents.length} eventos del sistema</p>
+          <div className="border-b p-6">
+            <h2 className="text-2xl font-bold">Órdenes Pagadas (Últimas 10)</h2>
+            <p className="text-gray-600 text-sm mt-1">Compras confirmadas</p>
           </div>
-
-          <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
-            {systemEvents.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">
-                <p>No hay eventos registrados aún</p>
-              </div>
-            ) : (
-              systemEvents.map((event) => (
-                <div key={event.id} className="p-4 hover:bg-gray-50 transition">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${getSeverityColor(event.severity)}`}>
-                          {event.type.toUpperCase()}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {event.timestamp instanceof Date
-                            ? event.timestamp.toLocaleTimeString('es-CL')
-                            : new Date(event.timestamp).toLocaleTimeString('es-CL')}
-                        </span>
-                      </div>
-                      <p className="text-gray-900 font-medium">{event.message}</p>
-                    </div>
-                    {event.severity === 'error' && <FiAlertCircle className="text-red-600 mt-1" />}
-                  </div>
-                </div>
-              ))
-            )}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">ID Orden</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Cliente</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Total</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Items</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {ordenesPagadas.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                      Sin órdenes pagadas
+                    </td>
+                  </tr>
+                ) : (
+                  ordenesPagadas.map((orden) => (
+                    <tr key={orden.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <code className="text-xs bg-gray-100 px-2 py-1 rounded">{orden.id.slice(0, 12)}...</code>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="font-medium">{orden.nombre}</p>
+                          <p className="text-sm text-gray-600">{orden.email}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-green-600">${orden.total.toLocaleString('es-CL')}</span>
+                      </td>
+                      <td className="px-6 py-4 text-sm">{orden.items?.length || 0} productos</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

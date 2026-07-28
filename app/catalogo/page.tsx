@@ -278,8 +278,7 @@ export default function CatalogoPage() {
                       className="w-full h-48 object-cover"
                     />
                   ) : (
-                    <div className="bg-gradient-to-br from-green-100 to-green-200 h-48 flex items-center justify-center text-6xl">
-                      {emojis[producto.categoria] || ''}
+                    <div className="bg-gradient-to-br from-green-100 to-green-200 h-48 flex items-center justify-center">
                     </div>
                   )}
                   <div className="p-4 flex-1 flex flex-col">

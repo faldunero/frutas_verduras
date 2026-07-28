@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { db } from '@/lib/firebase'
+import { CONFIG } from '@/lib/config'
 import { doc, setDoc, deleteDoc, updateDoc, increment, serverTimestamp } from 'firebase/firestore'
 import { useCart } from './useCart'
 import { useAuth } from './useAuth'
@@ -84,7 +85,7 @@ export function useCartOrder() {
         }
 
         // CREAR/ACTUALIZAR ORDEN
-        const reservadoHasta = new Date(Date.now() + 30 * 60 * 1000)
+        const reservadoHasta = new Date(Date.now() + CONFIG.RESERVATION_DURATION_MINUTES * 60 * 1000)
         const ordenData = {
           usuarioId: user.uid,
           usuarioEmail: user.email,

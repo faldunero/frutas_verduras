@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { CONFIG } from '@/lib/config'
 
 export function useCleanupExpiredOrders() {
   useEffect(() => {
@@ -22,8 +23,8 @@ export function useCleanupExpiredOrders() {
     // Ejecutar inmediatamente al montar
     liberarReservas()
 
-    // Ejecutar cada 2 minutos
-    const interval = setInterval(liberarReservas, 2 * 60 * 1000)
+    // Ejecutar cada X minutos (configurado en CONFIG)
+    const interval = setInterval(liberarReservas, CONFIG.CLEANUP_INTERVAL_MINUTES * 60 * 1000)
 
     return () => clearInterval(interval)
   }, [])

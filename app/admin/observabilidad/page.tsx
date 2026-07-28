@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { db } from '@/lib/firebase'
+import { CONFIG } from '@/lib/config'
 import { collection, query, onSnapshot, where, orderBy, limit } from 'firebase/firestore'
 import Link from 'next/link'
 import { FiArrowLeft, FiAlertTriangle, FiClock, FiCheckCircle } from 'react-icons/fi'
@@ -45,7 +46,7 @@ export default function ObservabilidadPage() {
       collection(db, 'ordenes'),
       where('estado', '==', 'pendiente'),
       orderBy('createdAt', 'desc'),
-      limit(20)
+      limit(CONFIG.PENDING_ORDERS_LIMIT)
     )
 
     const unsubPendiente = onSnapshot(
@@ -67,7 +68,7 @@ export default function ObservabilidadPage() {
       collection(db, 'ordenes'),
       where('estado', '==', 'pagada'),
       orderBy('createdAt', 'desc'),
-      limit(10)
+      limit(CONFIG.PAID_ORDERS_LIMIT)
     )
 
     const unsubPagada = onSnapshot(
@@ -94,7 +95,7 @@ export default function ObservabilidadPage() {
             id: doc.id,
             ...doc.data(),
           }))
-          .filter((p: any) => (p.unidades || p.stock || 0) < 5) as Producto[]
+          .filter((p: any) => (p.unidades || p.stock || 0) < CONFIG.LOW_STOCK_THRESHOLD) as Producto[]
         setStockBajo(data.sort((a, b) => (a.unidades || a.stock || 0) - (b.unidades || b.stock || 0)))
         setLoading(false)
       },
@@ -168,7 +169,7 @@ export default function ObservabilidadPage() {
 
         {stockBajo.length > 0 && (
           <div className="bg-red-50 border-l-4 border-red-600 rounded-lg p-6 mb-8">
-            <h2 className="text-xl font-bold text-red-900 mb-4">Productos con Stock Bajo (&lt; 5)</h2>
+            <h2 className="text-xl font-bold text-red-900 mb-4">Productos con Stock Bajo (&lt; {CONFIG.LOW_STOCK_THRESHOLD})</h2>
             <div className="space-y-2">
               {stockBajo.map((p) => (
                 <div key={p.id} className="flex justify-between items-center bg-white p-3 rounded">

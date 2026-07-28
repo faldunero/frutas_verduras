@@ -1,67 +1,52 @@
 import { useEffect, useState } from 'react'
 import { db } from '@/lib/firebase'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, onSnapshot } from 'firebase/firestore'
 
 export function useStockDisponible(productoId: string, stockTotal: number) {
   const [stockDisponible, setStockDisponible] = useState(stockTotal)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('[useStockDisponible] INIT - producto:', productoId, 'total:', stockTotal)
+    try {
+      // Real-time listener para órdenes pendientes
+      const ahora = new Date()
+      const ordenesRef = collection(db, 'ordenes')
+      const q = query(
+        ordenesRef,
+        where('estado', '==', 'pendiente'),
+        where('reservadoHasta', '>', ahora)
+      )
 
-    const calcularStockDisponible = async () => {
-      try {
-        console.log('[useStockDisponible] CALC START - producto:', productoId)
+      const unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          let totalReservado = 0
 
-        // Obtener todas las órdenes pendientes con reserva activa
-        const ahora = new Date()
-        console.log('[useStockDisponible] Current time:', ahora.toISOString())
+          // Sumar cantidad reservada de este producto
+          snapshot.docs.forEach((doc) => {
+            const orden = doc.data()
+            const itemReservado = orden.items?.find((item: any) => item.productoId === productoId)
+            if (itemReservado) {
+              totalReservado += itemReservado.cantidad
+            }
+          })
 
-        const ordenesRef = collection(db, 'ordenes')
-        const q = query(
-          ordenesRef,
-          where('estado', '==', 'pendiente'),
-          where('reservadoHasta', '>', ahora)
-        )
+          const disponible = Math.max(0, stockTotal - totalReservado)
+          setStockDisponible(disponible)
+          setLoading(false)
+        },
+        (error) => {
+          console.error('Error en useStockDisponible:', error)
+          setStockDisponible(stockTotal)
+          setLoading(false)
+        }
+      )
 
-        console.log('[useStockDisponible] Querying orders...')
-        const snapshot = await getDocs(q)
-        console.log('[useStockDisponible] RESULT - found:', snapshot.size, 'orders')
-
-        let totalReservado = 0
-
-        // Sumar cantidad reservada de este producto
-        snapshot.docs.forEach((doc) => {
-          const orden = doc.data()
-          const itemReservado = orden.items?.find((item: any) => item.productoId === productoId)
-          if (itemReservado) {
-            console.log('[useStockDisponible] FOUND RESERVED:', itemReservado.cantidad, 'for product', productoId)
-            totalReservado += itemReservado.cantidad
-          }
-        })
-
-        const disponible = Math.max(0, stockTotal - totalReservado)
-        console.log('[useStockDisponible] FINAL - reserved:', totalReservado, 'available:', disponible)
-        setStockDisponible(disponible)
-        setLoading(false)
-      } catch (error: any) {
-        console.error('[useStockDisponible] ERROR:', error.message || error)
-        setStockDisponible(stockTotal)
-        setLoading(false)
-      }
-    }
-
-    calcularStockDisponible()
-
-    // Recalcular cada 10 segundos
-    const interval = setInterval(() => {
-      console.log('[useStockDisponible] RECALC - producto:', productoId)
-      calcularStockDisponible()
-    }, 10000)
-
-    return () => {
-      clearInterval(interval)
-      console.log('[useStockDisponible] CLEANUP - producto:', productoId)
+      return () => unsubscribe()
+    } catch (error) {
+      console.error('Error iniciando useStockDisponible:', error)
+      setStockDisponible(stockTotal)
+      setLoading(false)
     }
   }, [productoId, stockTotal])
 

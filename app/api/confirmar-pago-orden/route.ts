@@ -29,11 +29,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Orden está cancelada' }, { status: 400 })
     }
 
-    // Verificar que la orden aún está dentro del tiempo de reserva
-    if (orden.reservadoHasta && new Date() > orden.reservadoHasta.toDate?.()) {
-      return NextResponse.json({ error: 'Reserva expirada' }, { status: 400 })
-    }
-
     // NOTA: El stock YA fue decrementado cuando se agregó al carrito
     // Aquí solo marcamos la orden como pagada
 

@@ -3,6 +3,7 @@
 import { useCleanupExpiredOrders } from '@/hooks/useCleanupExpiredOrders'
 
 export function CleanupExpiredOrders() {
-  useCleanupExpiredOrders()
+  // TODO: Fix firestore permissions for cleanup endpoint
+  // useCleanupExpiredOrders()
   return null
 }

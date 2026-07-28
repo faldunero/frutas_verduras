@@ -272,6 +272,7 @@ export default function CheckoutPage() {
               const productoRef = doc(db, 'productos', item.id)
               await updateDoc(productoRef, {
                 unidades: increment(-item.cantidad),
+                stock: increment(-item.cantidad),
               })
               console.log(`✅ Stock actualizado para ${item.nombre}`)
             } catch (error) {
@@ -295,6 +296,7 @@ export default function CheckoutPage() {
             console.log(`Actualizando stock de ${item.nombre} (${item.id}): -${item.cantidad}`)
             const productoRef = doc(db, 'productos', item.id)
             await updateDoc(productoRef, {
+              unidades: increment(-item.cantidad),
               stock: increment(-item.cantidad),
             })
             console.log(`✅ Stock actualizado para ${item.nombre}`)

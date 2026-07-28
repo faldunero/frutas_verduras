@@ -36,7 +36,7 @@ export default function ProductoPage() {
   const [enWishlist, setEnWishlist] = useState(false)
 
   // Hook para stock disponible
-  const stockTotal = producto ? (producto.unidades || producto.stock || 0) as number : 0
+  const stockTotal = producto ? (producto.unidades || 0) as number : 0
   const { stockDisponible } = useStockDisponible(id, stockTotal)
 
   useEffect(() => {

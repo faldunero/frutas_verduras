@@ -34,7 +34,7 @@ export default function CatalogoPage() {
 
       const coincidePrecio = p.precio >= precioMin && p.precio <= precioMax
 
-      const cantidadDisponible = (p.unidades || p.stock || 0) as number
+      const cantidadDisponible = (p.unidades || 0) as number
       const coincideDisponibilidad = !soloDisponibles || cantidadDisponible > 0
 
       return coincideBusqueda && coincidePrecio && coincideDisponibilidad
@@ -103,7 +103,7 @@ export default function CatalogoPage() {
     if (!selectedProduct) return
 
     // Validar que hay suficiente stock
-    const stockActual = (selectedProduct.unidades || selectedProduct.stock || 0) as number
+    const stockActual = (selectedProduct.unidades || 0) as number
     if (cantidadSeleccionada > stockActual) {
       toast.error(
         `Stock insuficiente. Disponible: ${stockActual}, Solicitado: ${cantidadSeleccionada}`
@@ -298,7 +298,7 @@ export default function CatalogoPage() {
                     <p className="text-gray-500 text-xs mb-3">Peso: {producto.peso}</p>
 
                     <div className="mt-auto">
-                      {(producto.unidades || producto.stock || 0) > 0 ? (
+                      {(producto.unidades || 0) > 0 ? (
                         <div className="flex justify-between items-center">
                           <span className="text-green-600 font-bold text-lg">
                             ${producto.precio.toLocaleString('es-CL')}
@@ -315,7 +315,7 @@ export default function CatalogoPage() {
                 </Link>
 
                 <div className="p-4 pt-0">
-                  {(producto.unidades || producto.stock || 0) > 0 ? (
+                  {(producto.unidades || 0) > 0 ? (
                     <button
                       onClick={() => handleAgregar(producto)}
                       className="w-full bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition font-medium"

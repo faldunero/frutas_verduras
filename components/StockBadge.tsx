@@ -3,7 +3,7 @@
 import { Producto } from '@/lib/firebase'
 
 export function StockBadge({ producto }: { producto: Producto & { id: string } }) {
-  const stockActual = (producto.unidades || producto.stock || 0) as number
+  const stockActual = (producto.unidades || 0) as number
 
   const label = producto.unidadVenta === 'kilo'
     ? `Kilos: ${stockActual}`

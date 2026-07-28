@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       const productoDoc = await getDoc(productoRef)
       if (productoDoc.exists()) {
         await updateDoc(productoRef, {
-          stock: Math.max(0, productoDoc.data().stock - item.cantidad),
+          unidades: Math.max(0, productoDoc.data().unidades - item.cantidad),
         })
       }
     }

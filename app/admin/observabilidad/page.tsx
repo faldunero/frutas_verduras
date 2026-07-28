@@ -25,7 +25,6 @@ interface Producto {
   id: string
   nombre: string
   unidades: number
-  stock: number
 }
 
 export default function ObservabilidadPage() {
@@ -95,8 +94,8 @@ export default function ObservabilidadPage() {
             id: doc.id,
             ...doc.data(),
           }))
-          .filter((p: any) => (p.unidades || p.stock || 0) < CONFIG.LOW_STOCK_THRESHOLD) as Producto[]
-        setStockBajo(data.sort((a, b) => (a.unidades || a.stock || 0) - (b.unidades || b.stock || 0)))
+          .filter((p: any) => (p.unidades || 0) < CONFIG.LOW_STOCK_THRESHOLD) as Producto[]
+        setStockBajo(data.sort((a, b) => (a.unidades || 0) - (b.unidades || 0)))
         setLoading(false)
       },
       (error) => {
@@ -174,7 +173,7 @@ export default function ObservabilidadPage() {
               {stockBajo.map((p) => (
                 <div key={p.id} className="flex justify-between items-center bg-white p-3 rounded">
                   <span className="font-medium">{p.nombre}</span>
-                  <span className="text-red-600 font-bold">{p.unidades || p.stock || 0} disponibles</span>
+                  <span className="text-red-600 font-bold">{p.unidades || 0} disponibles</span>
                 </div>
               ))}
             </div>

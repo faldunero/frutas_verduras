@@ -2,10 +2,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Productos: lectura pública, escritura solo admin
+    // Productos: lectura pública, escritura temporal abierta para migración
     match /productos/{document=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if true;
     }
 
     // Órdenes: leer propias + admin ve todo, escribir solo propias

@@ -48,7 +48,8 @@ export interface Producto {
   nombre: string
   descripcion: string
   precio: number
-  unidades: number
+  unidades?: number
+  stock?: number
   categoria: string
   imagenUrl?: string
   peso: string

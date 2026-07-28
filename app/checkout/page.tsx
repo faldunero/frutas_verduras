@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useCart } from '@/hooks/useCart'
 import { useAuth } from '@/hooks/useAuth'
 import { useConfig } from '@/hooks/useConfig'
+import { useCartOrder } from '@/hooks/useCartOrder'
 import { db } from '@/lib/firebase'
-import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc, increment } from 'firebase/firestore'
+import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc, increment, setDoc } from 'firebase/firestore'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
@@ -15,6 +16,7 @@ export default function CheckoutPage() {
   const { items, getSubtotal, clearCart } = useCart()
   const { user, isAuthenticated } = useAuth()
   const { config } = useConfig()
+  const { ordenId } = useCartOrder()
   const [loading, setLoading] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -168,12 +170,13 @@ export default function CheckoutPage() {
         }
       }
 
-      // Crear la orden en Firestore
+      // Crear o actualizar la orden en Firestore
       // Calcular tiempo de expiración de reserva (30 minutos)
       const reservadoHasta = new Date(Date.now() + 30 * 60 * 1000)
 
       const ordenData = {
-        userId: user?.uid,
+        usuarioId: user?.uid,
+        usuarioEmail: user?.email,
         email: formData.email,
         nombre: formData.nombre,
         telefono: formData.telefono,
@@ -196,11 +199,21 @@ export default function CheckoutPage() {
         })),
         comentarios: formData.comentarios,
         reservadoHasta, // Reserva por 30 minutos
-        createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       }
 
-      const docRef = await addDoc(collection(db, 'ordenes'), ordenData)
+      let docRef
+      if (ordenId) {
+        // Actualizar orden existente
+        await setDoc(doc(db, 'ordenes', ordenId), ordenData, { merge: true })
+        docRef = { id: ordenId }
+      } else {
+        // Crear nueva orden
+        docRef = await addDoc(collection(db, 'ordenes'), {
+          ...ordenData,
+          createdAt: serverTimestamp(),
+        })
+      }
 
       // Enviar email de confirmación al cliente
       try {

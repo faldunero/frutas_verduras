@@ -8,6 +8,7 @@ import { doc, getDoc, collection, getDocs, query, where, addDoc, serverTimestamp
 import { useCart } from '@/hooks/useCart'
 import { useAuth } from '@/hooks/useAuth'
 import { useWishlist } from '@/hooks/useWishlist'
+import { useStockDisponible } from '@/hooks/useStockDisponible'
 import toast from 'react-hot-toast'
 import { FiHeart } from 'react-icons/fi'
 
@@ -26,13 +27,17 @@ export default function ProductoPage() {
   const { user, isAuthenticated } = useAuth()
   const { addItem } = useCart()
   const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlist()
-  
+
   const [producto, setProducto] = useState<(Producto & { id: string }) | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
   const [nuevoReview, setNuevoReview] = useState({ rating: 5, comentario: '' })
   const [enviandoReview, setEnviandoReview] = useState(false)
   const [enWishlist, setEnWishlist] = useState(false)
+
+  // Hook para stock disponible
+  const stockTotal = producto ? (producto.unidades || producto.stock || 0) as number : 0
+  const { stockDisponible } = useStockDisponible(id, stockTotal)
 
   useEffect(() => {
     fetchProducto()
@@ -163,15 +168,15 @@ export default function ProductoPage() {
               <p className="text-gray-700 mb-4">{producto.descripcion}</p>
               <div className="space-y-2 mb-6 text-sm text-gray-600">
                 <p><strong>Peso:</strong> {producto.peso}</p>
-                <p><strong>Stock:</strong> {producto.unidades || producto.stock || 0}</p>
+                <p><strong>Stock disponible:</strong> {stockDisponible}</p>
               </div>
               <p className="text-4xl font-bold text-green-600 mb-6">${producto.precio.toLocaleString()}</p>
               <button
                 onClick={() => { addItem(producto, 1); toast.success('Agregado al carrito')}}
-                disabled={(producto.unidades || producto.stock || 0) <= 0}
+                disabled={stockDisponible <= 0}
                 className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-bold py-3 rounded-lg"
               >
-                {(producto.unidades || producto.stock || 0) > 0 ? 'Agregar al Carrito' : 'Fuera de Stock'}
+                {stockDisponible > 0 ? 'Agregar al Carrito' : 'Fuera de Stock'}
               </button>
             </div>
           </div>

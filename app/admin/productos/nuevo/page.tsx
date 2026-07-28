@@ -18,7 +18,7 @@ export default function NuevoProductoPage() {
     nombre: '',
     descripcion: '',
     precio: 0,
-    stock: 0,
+    unidades: 0,
     categoria: 'frutas',
     peso: '1kg',
     disponible: true,
@@ -33,7 +33,7 @@ export default function NuevoProductoPage() {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'precio' || name === 'stock' ? parseFloat(value) : val,
+      [name]: name === 'precio' || name === 'unidades' ? parseFloat(value) : val,
     }))
   }
 
@@ -186,7 +186,7 @@ export default function NuevoProductoPage() {
                   </label>
                   <input
                     type="number"
-                    name="stock"
+                    name="unidades"
                     value={formData.unidades}
                     onChange={handleChange}
                     required

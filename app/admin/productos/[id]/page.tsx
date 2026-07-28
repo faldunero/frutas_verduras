@@ -229,7 +229,7 @@ export default function EditarProductoPage() {
                   </label>
                   <input
                     type="number"
-                    name="stock"
+                    name="unidades"
                     value={formData.unidades}
                     onChange={handleChange}
                     required

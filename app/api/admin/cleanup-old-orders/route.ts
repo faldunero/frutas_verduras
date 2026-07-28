@@ -51,8 +51,14 @@ export async function POST(req: Request) {
       eliminadas,
       message: `${eliminadas} órdenes eliminadas. Ahora puedes aplicar las nuevas reglas de seguridad.`
     })
-  } catch (error) {
-    console.error('Error en cleanup:', error)
-    return NextResponse.json({ error: 'Error al limpiar órdenes' }, { status: 500 })
+  } catch (error: any) {
+    console.error('[Cleanup] Error completo:', error)
+    console.error('[Cleanup] Error message:', error.message)
+    console.error('[Cleanup] Error code:', error.code)
+    return NextResponse.json({
+      error: 'Error al limpiar órdenes',
+      details: error.message,
+      code: error.code
+    }, { status: 500 })
   }
 }

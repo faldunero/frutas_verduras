@@ -358,7 +358,7 @@ export default function PedidosPage() {
                   <div>
                     <p className="text-sm text-gray-600">Total</p>
                     <p className="text-xl font-bold text-green-600">
-                      ${orden.total.toLocaleString('es-CL')}
+                      ${(orden.total || 0).toLocaleString('es-CL')}
                     </p>
                   </div>
                   <div>

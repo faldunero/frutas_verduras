@@ -216,7 +216,7 @@ export default function ObservabilidadPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-bold text-green-600">${orden.total.toLocaleString('es-CL')}</span>
+                        <span className="font-bold text-green-600">${(orden.total || 0).toLocaleString('es-CL')}</span>
                       </td>
                       <td className="px-6 py-4 text-sm">{orden.items?.length || 0} productos</td>
                       <td className="px-6 py-4">
@@ -267,7 +267,7 @@ export default function ObservabilidadPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-bold text-green-600">${orden.total.toLocaleString('es-CL')}</span>
+                        <span className="font-bold text-green-600">${(orden.total || 0).toLocaleString('es-CL')}</span>
                       </td>
                       <td className="px-6 py-4 text-sm">{orden.items?.length || 0} productos</td>
                     </tr>

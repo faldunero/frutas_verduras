@@ -95,7 +95,7 @@ useEffect(() => {
 
   // Calcular estadísticas
   const calcularEstadisticas = () => {
-    const totalVentas = ordenes.reduce((sum, o) => sum + o.total, 0)
+    const totalVentas = ordenes.reduce((sum, o) => sum + (o.total || 0), 0)
     const totalOrdenes = ordenes.length
     const totalClientes = new Set(ordenes.map((o) => o.email)).size
     const ventasPromedio = ordenes.length > 0 ? totalVentas / ordenes.length : 0
@@ -125,7 +125,7 @@ useEffect(() => {
         key = fecha.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })
       }
 
-      datos[key] = (datos[key] || 0) + orden.total
+      datos[key] = (datos[key] || 0) + (orden.total || 0)
     })
 
     return Object.entries(datos)
@@ -144,7 +144,7 @@ useEffect(() => {
       if (!datos[orden.email]) {
         datos[orden.email] = { email: orden.email, total: 0, ordenes: 0 }
       }
-      datos[orden.email].total += orden.total
+      datos[orden.email].total += (orden.total || 0)
       datos[orden.email].ordenes += 1
     })
 
@@ -158,7 +158,7 @@ useEffect(() => {
     const datos: { [key: string]: number } = {}
 
     ordenes.forEach((orden) => {
-      datos[orden.comuna] = (datos[orden.comuna] || 0) + orden.total
+      datos[orden.comuna] = (datos[orden.comuna] || 0) + (orden.total || 0)
     })
 
     return Object.entries(datos)
@@ -226,14 +226,14 @@ useEffect(() => {
 
     const ventasUltimos30 = ordenes
       .filter((o) => new Date(o.createdAt?.toDate?.() || o.createdAt) >= hace30Dias)
-      .reduce((sum, o) => sum + o.total, 0)
+      .reduce((sum, o) => sum + (o.total || 0), 0)
 
     const ventasAntes30Dias = ordenes
       .filter((o) => {
         const fecha = new Date(o.createdAt?.toDate?.() || o.createdAt)
         return fecha >= hace60Dias && fecha < hace30Dias
       })
-      .reduce((sum, o) => sum + o.total, 0)
+      .reduce((sum, o) => sum + (o.total || 0), 0)
 
     const variacion = ventasUltimos30 - ventasAntes30Dias
     const porcentaje = ventasAntes30Dias > 0 ? (variacion / ventasAntes30Dias) * 100 : 0

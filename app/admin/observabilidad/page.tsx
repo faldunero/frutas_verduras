@@ -85,7 +85,7 @@ export default function ObservabilidadPage() {
       }
     )
 
-    const qProductos = query(collection(db, 'productos'))
+    const qProductos = query(collection(db, 'productos'), limit(500))
     const unsubProductos = onSnapshot(
       qProductos,
       (snapshot) => {

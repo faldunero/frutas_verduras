@@ -7,7 +7,8 @@ import { CleanupExpiredOrders } from './CleanupExpiredOrders'
 export function LayoutClient({ children }: { children: ReactNode }) {
   return (
     <>
-      <CartOrderSync />
+      {/* Temporalmente desactivado para debugging */}
+      {/* <CartOrderSync /> */}
       <CleanupExpiredOrders />
       {children}
     </>

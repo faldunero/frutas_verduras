@@ -30,16 +30,29 @@ interface Producto {
 export default function ObservabilidadPage() {
   const { isAdmin } = useAuth()
   const router = useRouter()
+
+  // Verificar acceso ANTES de los hooks
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-2xl mx-auto px-4">
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <h1 className="text-2xl font-bold mb-2">Acceso denegado</h1>
+            <p className="text-gray-600">
+              Solo los administradores pueden ver esta página
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const [ordenesPendientes, setOrdenesPendientes] = useState<Orden[]>([])
   const [ordenesPagadas, setOrdenesPagadas] = useState<Orden[]>([])
   const [stockBajo, setStockBajo] = useState<Producto[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isAdmin) {
-      router.push('/auth/login')
-      return
-    }
 
     const qPendiente = query(
       collection(db, 'ordenes'),
